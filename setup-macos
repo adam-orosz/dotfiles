@@ -1,0 +1,59 @@
+#!/usr/bin/env bash
+
+set -o pipefail -o errtrace -o errexit -o nounset
+shopt -s inherit_errexit
+
+[[ -n "${TRACE:-}" ]] && set -o xtrace
+
+declare errmsg="ERROR (${0##*/})":
+trap 'echo >&2 $errmsg trap on error \(rc=${PIPESTATUS[@]}\) near line $LINENO' ERR
+
+
+echo "### MacOS ###"
+
+[ -f ~/.macos ] || ln -s $(PWD)/macos ~/.macos    
+
+cat >"~/.bash_profile" <<EOL
+[ -f ~/.bashrc ] && . ~/.bashrc
+EOL
+
+which -s brew
+if [[ $? != 0 ]]; then
+    /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+fi
+
+echo "installing packages with brew"
+brew bundle
+
+read -p "install applications with brew cask? (y/n) " answer
+case ${answer:0:1} in
+	y|Y )
+		echo "installing applications with brew cask"
+		./brew-cask.sh
+	;;
+esac
+
+read -p "configure database paths (y/n) " answer
+case ${answer:0:1} in
+	y|Y)
+		echo "Configure PostgreSQL, MongoDB and Redis"
+
+		POSTGRES_VERSION="$(postgres -V | awk '{print $NF}')"
+		mkdir -p ~/Library/LaunchAgents
+		cp -n /usr/local/Cellar/postgresql/${POSTGRES_VERSION}/homebrew.mxcl.postgresql.plist ~/Library/LaunchAgents/
+		launchctl load -w ~/Library/LaunchAgents/homebrew.mxcl.postgresql.plist
+
+		ln -sfv /usr/local/opt/redis/*.plist ~/Library/LaunchAgents
+		launchctl load -w ~/Library/LaunchAgents/homebrew.mxcl.redis.plist
+
+		mongo_db_folder=/data/db
+		[ -d /data/db ] || mkdir -p /data/db; sudo chown -R `id -un` /data/db
+esac
+
+read -p "load macos conf? (y/n) " answer
+case ${answer:0:1} in
+	y|Y )
+		echo "loading macos conf"
+		. ~/.macos
+	;;
+esac

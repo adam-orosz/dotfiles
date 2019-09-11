@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+rm -f ~/.config/nvim/init.vim
+rm -f ~/.mpprompt
+rm -f ~/.bashrc
+rm -f ~/.tmux.conf
+rm -f ~/.gitconfig
+rm -f ~/.macos
+rm -f ~/.kubectl-aliases

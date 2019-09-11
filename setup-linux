@@ -1,0 +1,152 @@
+#!/usr/bin/env bash
+
+set -o pipefail -o errtrace -o errexit -o nounset
+shopt -s inherit_errexit
+
+[[ -n "${TRACE:-}" ]] && set -o xtrace
+
+declare errmsg="ERROR (${0##*/})":
+trap 'echo >&2 $errmsg trap on error \(rc=${PIPESTATUS[@]}\) near line $LINENO' ERR
+
+echo "---- Linux ----"
+
+cat >"~/.profile" <<EOL
+[ -f ~/.bashrc ] && . ~/.bashrc
+EOL
+
+if [[ -z "${UPGRADE_PACKAGES}" ]]; then
+    echo " ---> Updating and Upgrading packages..."
+
+    CLOUD_SDK_SOURCE="/etc/apt/sources.list.d/google-cloud-sdk.list"
+    CLOUD_SDK_REPO="cloud-sdk-$(lsb_release -c -s)"
+    if [[ ! -f "${CLOUD_SDK_SOURCE}" ]]; then
+        echo "deb http://packages.cloud.google.com/apt $CLOUD_SDK_REPO main" | tee -a ${CLOUD_SDK_SOURCE}
+        curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
+    fi
+
+    sudo apt-get update
+    sudo apt-get upgrade -y
+fi
+
+sudo apt-get install -y \
+    apache2-utils \
+    apt-transport-https \
+    build-essential \
+    ca-certificates \
+    clang \
+    cmake \
+    curl \
+    direnv \
+    dnsutils \
+    docker.io \
+    gdb \
+    git \
+    git-crypt \
+    gnugp \
+    gnupg2 \
+    google-cloud-sdk \
+    google-cloud-sdk-app-engine-go \
+    htop \
+    jo \
+    jq \
+    less \
+    lldb \
+    man \
+    ncdu \
+    netcat-openbsd \
+    openssh-server \
+    pkg-config \
+    protobuf-compiler \
+    pwgen \
+    python \
+    python-dev \
+    python-pip \
+    python-software-properties \
+    python3 \
+    python3-dev \
+    python3-flake8 \
+    python3-pip \
+    python3-setuptools \
+    python3-venv \
+    python3-wheel \
+    shellcheck \
+    silversearcher-ag \
+    software-properties-common \
+    tmux \
+    tree \
+    unzip \
+    wget \
+    --no-install-recommends \
+
+rm -rf /var/lib/apt/lists/*
+
+if ! [[ -x "$(command -v go)" ]]; then
+    echo " ---> Installing Go"
+    export GO_VERSION="1.12.9"
+    wget "https://dl.google.com/go/go${GO_VERSION}.linux-amd64.tar.gz" 
+    tar -C /usr/local -xzf "go${GO_VERSION}.linux-amd64.tar.gz" 
+    rm -f "go${GO_VERSION}.linux-amd64.tar.gz"
+    export PATH="/usr/local/go/bin:$PATH"
+fi
+
+if ! [[ -x "$(command -v kubectl)" ]]; then
+    echo " ---> Installing kubectl"
+    curl -L -o /usr/local/bin/kubectl https://storage.googleapis.com/kubernetes-release/release/v1.12.8/bin/linux/amd64/kubectl
+    chmod 755 /usr/local/bin/kubectl
+fi
+
+if ! [[ -x "$(command -v protoc)" ]]; then
+    echo " ---> Installing protoc"
+    export PROTOBUF_VERSION="3.8.0"
+    mkdir -p protobuf_install 
+    pushd protobuf_install
+    wget https://github.com/protocolbuffers/protobuf/releases/download/v${PROTOBUF_VERSION}/protoc-${PROTOBUF_VERSION}-linux-x86_64.zip
+    unzip protoc-${PROTOBUF_VERSION}-linux-x86_64.zip
+    mv bin/protoc /usr/local/bin
+    mv include/* /usr/local/include/
+    popd
+    rm -rf protobuf_install
+fi
+
+if ! [[ -x "$(command -v yq)" ]]; then
+    echo " ---> Installing yq"
+    sudo add-apt-repository ppa:rmescandon/yq
+    sudo apt update
+    sudo apt install yq -y 
+fi
+
+echo " ---> Installing neovim"
+sudo add-apt-repository ppa:neovim-ppa/stable
+sudo apt-get update -y
+sudo apt-get install neovim -y
+
+if ! [[ -x "$(command -v jump)" ]]; then
+    echo " ---> Installing jump"
+    export JUMP_VERSION="0.23.0"
+    wget https://github.com/gsamokovarov/jump/releases/download/v${JUMP_VERSION}/jump_${JUMP_VERSION}_amd64.deb
+    sudo dpkg -i jump_${JUMP_VERSION}_amd64.deb
+    rm -f jump_${JUMP_VERSION}_amd64.deb
+fi
+
+if [[ ! -d "${HOME}/.fzf" ]]; then
+    echo " ---> Installing fzf"
+    git clone https://github.com/junegunn/fzf "${HOME}/.fzf"
+    pushd "${HOME}/.fzf"
+    git remote set-url origin git@github.com:junegunn/fzf.git 
+    ${HOME}/.fzf/install --bin --64 --no-bash --no-zsh --no-fish
+    popd
+fi
+
+if [[ ! -d "${HOME}/.tmux/plugins" ]]; then
+    echo " ---> Installing tmux plugins"
+    git clone https://github.com/tmux-plugins/tpm "${HOME}/.tmux/plugins/tpm"
+    git clone https://github.com/tmux-plugins/tmux-open.git "${HOME}/.tmux/plugins/tmux-open"
+    git clone https://github.com/tmux-plugins/tmux-yank.git "${HOME}/.tmux/plugins/tmux-yank"
+    git clone https://github.com/tmux-plugins/tmux-prefix-highlight.git "${HOME}/.tmux/plugins/tmux-prefix-highlight"
+fi
+
+echo " ---> Adding user to docker group"
+sudo gpasswd -a "${USER}" docker
+
+echo ""
+echo "---> Done!"

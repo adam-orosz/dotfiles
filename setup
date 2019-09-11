@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+
+# ask for the administrator password upfront
+sudo -v
+
+mkdir -p ~/.config/nvim
+
+[ -f ~/.config/nvim/init.vim ] || ln -s $(PWD)/nvim ~/.config/nvim/init.vim
+[ -f ~/.mpprompt ] || ln -s $(PWD)/mpprompt ~/.mpprompt
+[ -f ~/.bashrc ] || ln -s $(PWD)/bashrc ~/.bashrc
+[ -f ~/.tmux.conf ] || ln -s $(PWD)/tmuxconf ~/.tmux.conf
+[ -f ~/.gitconfig ] || ln -s $(PWD)/gitconfig ~/.gitconfig
+[ -f ~/.kubectl-aliases ] || ln -s $(PWD)/kubectl-aliases ~/.kubectl-aliases
+
+if [[ "$(uname)" == "Darwin" ]]; then
+    ./setup-macos.sh
+elif [[ "$(uname)" == "Linux" ]]; then
+    ./setup-linux.sh
+else
+    echo "$(uname) is not supported. Exiting..."
+    exit 1
+fi
+
+# vim-plug to autoload
+curl -fLo ~/.vim/autoload/plug.vim --create-dirs \
+    https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+
+echo "Complete!"

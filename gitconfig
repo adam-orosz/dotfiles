@@ -1,0 +1,18 @@
+[user]
+    name = Mattias Pernhult
+    email = pernhultmattias@gmail.com
+
+[github]
+    user = MattiasPernhult
+
+[bitbucket]
+    user = MattiasPernhult
+
+[push]
+    default = current
+
+[core]
+        excludesfile = /Users/mattias/.gitignore_global
+[alias]
+        squash = "!f(){ git reset --soft HEAD~${1} && git commit --edit -m\"$(git log --format=%B --reverse HEAD..HEAD@{1})\"; };f"
+        recent = branch --sort=committerdate

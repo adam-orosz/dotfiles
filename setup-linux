@@ -10,8 +10,8 @@ trap 'echo >&2 $errmsg trap on error \(rc=${PIPESTATUS[@]}\) near line $LINENO' 
 
 echo "---- Linux ----"
 
-cat >"~/.profile" <<EOL
-[ -f ~/.bashrc ] && . ~/.bashrc
+cat >"${HOME}/.profile" <<EOL
+[ -f ${HOME}/.bashrc ] && . ${HOME}/.bashrc
 EOL
 
 if [[ -z "${UPGRADE_PACKAGES}" ]]; then

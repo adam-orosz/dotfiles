@@ -5,12 +5,12 @@ sudo -v
 
 mkdir -p ~/.config/nvim
 
-[ -f ~/.config/nvim/init.vim ] || ln -s $(PWD)/nvim ~/.config/nvim/init.vim
-[ -f ~/.mpprompt ] || ln -s $(PWD)/mpprompt ~/.mpprompt
-[ -f ~/.bashrc ] || ln -s $(PWD)/bashrc ~/.bashrc
-[ -f ~/.tmux.conf ] || ln -s $(PWD)/tmuxconf ~/.tmux.conf
-[ -f ~/.gitconfig ] || ln -s $(PWD)/gitconfig ~/.gitconfig
-[ -f ~/.kubectl-aliases ] || ln -s $(PWD)/kubectl-aliases ~/.kubectl-aliases
+[ -f ~/.config/nvim/init.vim ] || ln -s $(pwd)/nvim ~/.config/nvim/init.vim
+[ -f ~/.mpprompt ] || ln -s $(pwd)/mpprompt ~/.mpprompt
+[ -f ~/.bashrc ] || ln -s $(pwd)/bashrc ~/.bashrc
+[ -f ~/.tmux.conf ] || ln -s $(pwd)/tmuxconf ~/.tmux.conf
+[ -f ~/.gitconfig ] || ln -s $(pwd)/gitconfig ~/.gitconfig
+[ -f ~/.kubectl-aliases ] || ln -s $(pwd)/kubectl-aliases ~/.kubectl-aliases
 
 if [[ "$(uname)" == "Darwin" ]]; then
     ./setup-macos.sh

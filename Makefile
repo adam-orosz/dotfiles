@@ -12,9 +12,12 @@ endif
 
 clean:
 > ./clean
+.PHONY: clean
 
 setup: clean
 > ./setup
+.PHONY: setup
 
 setup-linux:
 > ./setup-linux
+.PHONY: setup-linux

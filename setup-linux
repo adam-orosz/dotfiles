@@ -14,21 +14,19 @@ cat >"${HOME}/.profile" <<EOL
 [ -f ${HOME}/.bashrc ] && . ${HOME}/.bashrc
 EOL
 
-if [[ -z "${UPGRADE_PACKAGES}" ]]; then
-    echo " ---> Updating and Upgrading packages..."
+echo " ---> Updating and Upgrading packages..."
 
-    CLOUD_SDK_SOURCE="/etc/apt/sources.list.d/google-cloud-sdk.list"
-    CLOUD_SDK_REPO="cloud-sdk-$(lsb_release -c -s)"
-    if [[ ! -f "${CLOUD_SDK_SOURCE}" ]]; then
-        echo "deb http://packages.cloud.google.com/apt $CLOUD_SDK_REPO main" | tee -a ${CLOUD_SDK_SOURCE}
-        curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
-    fi
-
-    sudo apt-get update
-    sudo apt-get upgrade -y
+CLOUD_SDK_SOURCE="/etc/apt/sources.list.d/google-cloud-sdk.list"
+CLOUD_SDK_REPO="cloud-sdk-$(lsb_release -c -s)"
+if [[ ! -f "${CLOUD_SDK_SOURCE}" ]]; then
+    echo "deb http://packages.cloud.google.com/apt $CLOUD_SDK_REPO main" | sudo tee -a ${CLOUD_SDK_SOURCE}
+    curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
 fi
 
-sudo apt-get install -y \
+sudo apt update
+sudo apt upgrade -y
+
+sudo apt install -y \
     apache2-utils \
     apt-transport-https \
     build-essential \
@@ -42,7 +40,6 @@ sudo apt-get install -y \
     gdb \
     git \
     git-crypt \
-    gnugp \
     gnupg2 \
     google-cloud-sdk \
     google-cloud-sdk-app-engine-go \
@@ -61,7 +58,6 @@ sudo apt-get install -y \
     python \
     python-dev \
     python-pip \
-    python-software-properties \
     python3 \
     python3-dev \
     python3-flake8 \
@@ -78,32 +74,31 @@ sudo apt-get install -y \
     wget \
     --no-install-recommends \
 
-rm -rf /var/lib/apt/lists/*
+sudo rm -rf /var/lib/apt/lists/*
 
 if ! [[ -x "$(command -v go)" ]]; then
     echo " ---> Installing Go"
     export GO_VERSION="1.12.9"
-    wget "https://dl.google.com/go/go${GO_VERSION}.linux-amd64.tar.gz" 
-    tar -C /usr/local -xzf "go${GO_VERSION}.linux-amd64.tar.gz" 
+    wget "https://dl.google.com/go/go${GO_VERSION}.linux-amd64.tar.gz"
+    sudo tar -C /usr/local -xzf "go${GO_VERSION}.linux-amd64.tar.gz"
     rm -f "go${GO_VERSION}.linux-amd64.tar.gz"
-    export PATH="/usr/local/go/bin:$PATH"
 fi
 
 if ! [[ -x "$(command -v kubectl)" ]]; then
     echo " ---> Installing kubectl"
-    curl -L -o /usr/local/bin/kubectl https://storage.googleapis.com/kubernetes-release/release/v1.12.8/bin/linux/amd64/kubectl
-    chmod 755 /usr/local/bin/kubectl
+    sudo curl -L -o /usr/local/bin/kubectl https://storage.googleapis.com/kubernetes-release/release/v1.12.8/bin/linux/amd64/kubectl
+    sudo chmod 755 /usr/local/bin/kubectl
 fi
 
 if ! [[ -x "$(command -v protoc)" ]]; then
     echo " ---> Installing protoc"
     export PROTOBUF_VERSION="3.8.0"
-    mkdir -p protobuf_install 
+    mkdir -p protobuf_install
     pushd protobuf_install
     wget https://github.com/protocolbuffers/protobuf/releases/download/v${PROTOBUF_VERSION}/protoc-${PROTOBUF_VERSION}-linux-x86_64.zip
     unzip protoc-${PROTOBUF_VERSION}-linux-x86_64.zip
-    mv bin/protoc /usr/local/bin
-    mv include/* /usr/local/include/
+    sudo mv bin/protoc /usr/local/bin
+    sudo mv include/* /usr/local/include/
     popd
     rm -rf protobuf_install
 fi
@@ -112,13 +107,13 @@ if ! [[ -x "$(command -v yq)" ]]; then
     echo " ---> Installing yq"
     sudo add-apt-repository ppa:rmescandon/yq
     sudo apt update
-    sudo apt install yq -y 
+    sudo apt install yq -y
 fi
 
 echo " ---> Installing neovim"
 sudo add-apt-repository ppa:neovim-ppa/stable
-sudo apt-get update -y
-sudo apt-get install neovim -y
+sudo apt update -y
+sudo apt install neovim -y
 
 if ! [[ -x "$(command -v jump)" ]]; then
     echo " ---> Installing jump"
@@ -132,8 +127,8 @@ if [[ ! -d "${HOME}/.fzf" ]]; then
     echo " ---> Installing fzf"
     git clone https://github.com/junegunn/fzf "${HOME}/.fzf"
     pushd "${HOME}/.fzf"
-    git remote set-url origin git@github.com:junegunn/fzf.git 
-    ${HOME}/.fzf/install --bin --64 --no-bash --no-zsh --no-fish
+    git remote set-url origin git@github.com:junegunn/fzf.git
+    ${HOME}/.fzf/install --bin --64 --no-zsh --no-fish
     popd
 fi
 

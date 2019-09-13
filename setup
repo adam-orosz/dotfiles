@@ -17,9 +17,9 @@ mkdir -p ~/code/bin
 [ -f ~/.kubectl-aliases ] || ln -s $(pwd)/kubectl-aliases ~/.kubectl-aliases
 
 if [[ "$(uname)" == "Darwin" ]]; then
-    ./setup-macos.sh
+    ./setup-macos
 elif [[ "$(uname)" == "Linux" ]]; then
-    ./setup-linux.sh
+    ./setup-linux
 else
     echo "$(uname) is not supported. Exiting..."
     exit 1

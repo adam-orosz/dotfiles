@@ -4,6 +4,10 @@
 sudo -v
 
 mkdir -p ~/.config/nvim
+mkdir -p ~/code/go
+mkdir -p ~/code/python
+mkdir -p ~/code/rust
+mkdir -p ~/code/bin
 
 [ -f ~/.config/nvim/init.vim ] || ln -s $(pwd)/nvim ~/.config/nvim/init.vim
 [ -f ~/.mpprompt ] || ln -s $(pwd)/mpprompt ~/.mpprompt

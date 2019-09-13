@@ -14,8 +14,6 @@ clean:
 > ./clean
 
 setup: clean
-> mkdir -p ~/code/go
-> mkdir -p ~/code/python
 > ./setup
 
 setup-linux:

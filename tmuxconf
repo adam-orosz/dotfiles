@@ -15,15 +15,15 @@ set-option -g set-titles on
 set-option -g status-bg default
 set-option -g status-fg white
 set-option -g status-justify left
-set-option -g status-attr dim
+#set-option -g status-attr dim
 set-option -g status-right '%H:%Mh'
 set-option -g status-left '#S'
 
 # default window title
-set-window-option -g window-status-attr dim
+#set-window-option -g window-status-attr dim
 
 # reattaches to the user namespace, required if not using bash as default shell
-set-option -g default-command "reattach-to-user-namespace -l /usr/local/bin/bash --login && cc"
+#set-option -g default-command "reattach-to-user-namespace -l /usr/local/bin/bash --login && cc"
 
 # big history
 set-option -g history-limit 999999999

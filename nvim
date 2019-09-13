@@ -23,6 +23,7 @@ Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
 Plug 'Shougo/neosnippet'
 Plug 'Shougo/neosnippet-snippets'
 Plug 'vim-airline/vim-airline'
+Plug 'vim-airline/vim-airline-themes'
 Plug 'christoomey/vim-tmux-navigator'
 Plug 'itchyny/calendar.vim'
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
@@ -112,7 +113,7 @@ set updatetime=100			" redraw the status bar often
 set showtabline=2
 set synmaxcol=200			" don't try to highlight lines longer than 200 characters.
 set showcmd
-set foldcolumn=10
+set foldcolumn=2
 
 " neovim specific settings
 if has('nvim')
@@ -121,7 +122,7 @@ if has('nvim')
     " example:
     " pip3.6 install -U neovim
     let g:python_host_prog = '/usr/bin/python'
-    let g:python3_host_prog = '/usr/local/bin/python3'
+    let g:python3_host_prog = '/usr/bin/python3'
 endif
 
 " Enable mouse if possible

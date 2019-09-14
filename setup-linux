@@ -50,6 +50,7 @@ sudo apt-get install -y \
     jq \
     less \
     lldb \
+	m4 \
     man \
 	maven \
 	mkdocs \

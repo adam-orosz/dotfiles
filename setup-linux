@@ -67,11 +67,11 @@ sudo apt-get install -y \
     python-dev \
     python-pip \
     python3.7 \
-    python3-dev \
+    python3.7-dev \
+    python3.7-venv \
     python3-flake8 \
     python3-pip \
     python3-setuptools \
-    python3-venv \
     python3-wheel \
 	openjdk-8-jdk \
     silversearcher-ag \

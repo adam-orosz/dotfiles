@@ -1,5 +1,13 @@
 #!/usr/bin/env bash
 
+set -o pipefail -o errtrace -o errexit -o nounset
+shopt -s inherit_errexit
+
+[[ -n "${TRACE:-}" ]] && set -o xtrace
+
+declare errmsg="ERROR (${0##*/})":
+trap 'echo >&2 $errmsg trap on error \(rc=${PIPESTATUS[@]}\) near line $LINENO' ERR
+
 # ask for the administrator password upfront
 sudo -v
 
@@ -14,7 +22,6 @@ mkdir -p ~/code/bin
 [ -f ~/.bashrc ] || ln -s $(pwd)/bashrc ~/.bashrc
 [ -f ~/.tmux.conf ] || ln -s $(pwd)/tmuxconf ~/.tmux.conf
 [ -f ~/.gitconfig ] || ln -s $(pwd)/gitconfig ~/.gitconfig
-[ -f ~/.kubectl-aliases ] || ln -s $(pwd)/kubectl-aliases ~/.kubectl-aliases
 
 if [[ "$(uname)" == "Darwin" ]]; then
     ./setup-macos

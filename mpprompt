@@ -4,7 +4,7 @@ _escape() {
 	echo -nE "${1//\\/\\\\}"
 }
 
-_git_branch() {
+_mp_git_branch() {
 	git rev-parse --is-inside-work-tree >/dev/null 2>&1 || return
 
 	local branch
@@ -37,7 +37,7 @@ _set_prompt() {
 		MP_ERR=""
 	fi
 
-	local mp_git="$(_git_branch)"
+	local mp_git="$(_mp_git_branch)"
 	if [[ -n "${mp_git}" ]]; then
 		MP_GIT=" ${_green_color}(${mp_git})${_reset}"
 	else

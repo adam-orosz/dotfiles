@@ -1,19 +1,10 @@
 #!/usr/bin/env bash
 
-set -o pipefail -o errtrace -o errexit -o nounset
-shopt -s inherit_errexit
-
-[[ -n "${TRACE:-}" ]] && set -o xtrace
-
-declare errmsg="ERROR (${0##*/})":
-trap 'echo >&2 $errmsg trap on error \(rc=${PIPESTATUS[@]}\) near line $LINENO' ERR
-
-
 echo "### MacOS ###"
 
 [ -f ~/.macos ] || ln -s $(PWD)/macos ~/.macos    
 
-cat >"~/.bash_profile" <<EOL
+cat > "~/.bash_profile" <<EOL
 [ -f ~/.bashrc ] && . ~/.bashrc
 EOL
 

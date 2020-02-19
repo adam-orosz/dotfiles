@@ -14,6 +14,9 @@ cat >"${HOME}/.profile" <<EOL
 [ -f ${HOME}/.bashrc ] && . ${HOME}/.bashrc
 EOL
 
+echo " ---> Installing prerequisites"
+sudo apt-get install -y git curl apt-transport-https software-properties-common
+
 echo " ---> Updating and Upgrading packages..."
 
 CLOUD_SDK_SOURCE="/etc/apt/sources.list.d/google-cloud-sdk.list"
@@ -48,16 +51,16 @@ sudo apt-get install -y \
     jq \
     less \
     lldb \
-	m4 \
+    m4 \
     man \
-	maven \
-	mkdocs \
+    maven \
+    mkdocs \
     ncdu \
     netcat-openbsd \
     openssh-server \
-	packer \
-	parallel \
-	pass \
+    packer \
+    parallel \
+    pass \
     pkg-config \
     protobuf-compiler \
     pwgen \
@@ -71,7 +74,7 @@ sudo apt-get install -y \
     python3-pip \
     python3-setuptools \
     python3-wheel \
-	openjdk-8-jdk \
+    openjdk-8-jdk \
     silversearcher-ag \
     software-properties-common \
     tmux \
@@ -93,7 +96,7 @@ sudo apt-get install nodejs
 
 if ! [[ -x "$(command -v go)" ]]; then
     echo " ---> Installing Go"
-    export GO_VERSION="1.12.14"
+    export GO_VERSION="1.13.8"
     wget "https://dl.google.com/go/go${GO_VERSION}.linux-amd64.tar.gz"
     sudo tar -C /usr/local -xzf "go${GO_VERSION}.linux-amd64.tar.gz"
     rm -f "go${GO_VERSION}.linux-amd64.tar.gz"
@@ -103,7 +106,7 @@ curl https://raw.githubusercontent.com/golang/dep/master/install.sh | INSTALL_DI
 
 if ! [[ -x "$(command -v kubectl)" ]]; then
     echo " ---> Installing kubectl"
-    sudo curl -L -o /usr/local/bin/kubectl https://storage.googleapis.com/kubernetes-release/release/v1.12.8/bin/linux/amd64/kubectl
+    sudo curl -L -o /usr/local/bin/kubectl https://storage.googleapis.com/kubernetes-release/release/v1.13.11/bin/linux/amd64/kubectl
     sudo chmod 755 /usr/local/bin/kubectl
 fi
 
@@ -164,6 +167,8 @@ fi
 
 echo " ---> Adding user to docker group"
 sudo gpasswd -a "${USER}" docker
+sudo usermod -aG docker mattias
+sudo systemctl enable docker
 
 echo ""
 echo "---> Done!"

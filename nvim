@@ -14,9 +14,9 @@ Plug 'kaicataldo/material.vim'
 
 " Dependencies
 Plug 'Shougo/neocomplcache'     " Depenency for Shougo/neosnippet
-Plug 'godlygeek/tabular'		" This must come before plasticboy/vim-markdown
-Plug 'tpope/vim-rhubarb'		" Dependency for tpope/fugitive
-Plug 'Shougo/vimshell'			" Dependency for vim-delve
+Plug 'godlygeek/tabular'        " This must come before plasticboy/vim-markdown
+Plug 'tpope/vim-rhubarb'        " Dependency for tpope/fugitive
+Plug 'Shougo/vimshell'          " Dependency for vim-delve
 
 " General
 Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
@@ -83,19 +83,19 @@ let g:material_theme_style = 'default'
 let g:airline_theme = 'material'
 let g:lightline = { 'colorscheme': 'material_vim' }
 if (has("nvim"))
-    let $NVIM_TUI_ENABLE_TRUE_COLOR=1
+  let $NVIM_TUI_ENABLE_TRUE_COLOR=1
 endif
 if (has("termguicolors"))
-    set termguicolors
+  set termguicolors
 endif
 
-set autoindent				" take indent from previous line
-set smartindent				" enable smart indentation
-set autoread				" reload file if the file changes on the disk
-set autowrite				" write when switching buffers
-set autowriteall			" write on :quit
-set colorcolumn=120			" highlight the 120th column
-set completeopt-=preview	" remove the preview window
+set autoindent            " take indent from previous line
+set smartindent           " enable smart indentation
+set autoread              " reload file if the file changes on the disk
+set autowrite             " write when switching buffers
+set autowriteall          " write on :quit
+set colorcolumn=120       " highlight the 120th column
+set completeopt-=preview  " remove the preview window
 set cursorline
 set encoding=utf-8
 set nospell
@@ -103,31 +103,31 @@ set noswapfile
 set nowrap
 set noerrorbells
 set novisualbell
-set number					" show number ruler
+set number                " show number ruler
 set ruler
 set softtabstop=4
 set tabstop=4
 set noexpandtab
-set title					" let vim set the terminal title
-set updatetime=100			" redraw the status bar often
+set title                 " let vim set the terminal title
+set updatetime=100        " redraw the status bar often
 set showtabline=2
-set synmaxcol=200			" don't try to highlight lines longer than 200 characters.
+set synmaxcol=200         " don't try to highlight lines longer than 200 characters.
 set showcmd
 set foldcolumn=2
 
 " neovim specific settings
 if has('nvim')
-    " Set the Python binaries neovim is using. Please note that you will need to
-    " install the neovim package for these binaries separately like this for
-    " example:
-    " pip3.6 install -U neovim
-    let g:python_host_prog = '/usr/bin/python'
-    let g:python3_host_prog = '/usr/bin/python3'
+  " Set the Python binaries neovim is using. Please note that you will need to
+  " install the neovim package for these binaries separately like this for
+  " example:
+  " pip3.6 install -U neovim
+  let g:python_host_prog = '/usr/bin/python'
+  let g:python3_host_prog = '/usr/bin/python3'
 endif
 
 " Enable mouse if possible
 if has('mouse')
-	set mouse=a
+  set mouse=a
 endif
 
 " Allow vim to set custom font and color
@@ -417,12 +417,12 @@ autocmd FileType go nmap <leader>c <Plug>(go-coverage-toggle)
 
 " run :GoBuild or :GoTestCompile based on the go file
 function! s:build_go_files()
-	let l:file = expand('%')
-	if l:file =~# '^\f\+_test\.go$'
-		call go#test#Test(0, 1)
-	elseif l:file =~# '^\f\+\.go$'
-		call go#cmd#Build(0)
-	endif
+  let l:file = expand('%')
+  if l:file =~# '^\f\+_test\.go$'
+    call go#test#Test(0, 1)
+  elseif l:file =~# '^\f\+\.go$'
+    call go#cmd#Build(0)
+  endif
 endfunction
 autocmd FileType go nmap <leader>b :<C-u>call <SID>build_go_files()<CR>
 

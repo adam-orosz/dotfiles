@@ -89,16 +89,16 @@ alias k='kubectl'
 complete -F __start_kubectl k
 
 color-diff-kubectl() {
-	local verb resource id
-	readonly verb="$1"; shift
-	readonly resource="$1"; shift
-	readonly id="$1"; shift
-	kubectl "${verb}" "${resource}" "${id}" -w -o json \
-        | jq -c --unbuffered . \
-        | bash -c 'PREV="{}"; while read -r NEXT; do diff -u <(echo -E "$PREV" \
-        | jq .) <(echo -E "$NEXT" \
-        | jq .); PREV=$NEXT; echo; done' \
-        | colordiff
+  local verb resource id
+  readonly verb="$1"; shift
+  readonly resource="$1"; shift
+  readonly id="$1"; shift
+  kubectl "${verb}" "${resource}" "${id}" -w -o json \
+    | jq -c --unbuffered . \
+    | bash -c 'PREV="{}"; while read -r NEXT; do diff -u <(echo -E "$PREV" \
+    | jq .) <(echo -E "$NEXT" \
+	| jq .); PREV=$NEXT; echo; done' \
+	| colordiff
 }
 
 alias knodesusage='kubectl describe nodes | grep -A5 "Allocated resources"'
@@ -110,11 +110,11 @@ alias knodesusage='kubectl describe nodes | grep -A5 "Allocated resources"'
 take() { mkdir $1 && cd $1; }
 
 mkbashf() {
-	if [ -f "$1" ]; then
-		echo >&2 "File already exists: $1"
-		return 1
-	fi
-	cat << EOF > $1
+  if [ -f "$1" ]; then
+    echo >&2 "File already exists: $1"
+    return 1
+  fi
+  cat << EOF > $1
 #!/usr/bin/env bash
 
 set -o pipefail -o errtrace -o errexit -o nounset
@@ -131,7 +131,7 @@ main() {
 
 main "\$@"
 EOF
-	chmod +x "$1"
+  chmod +x "$1"
 }
 
 # extracts decompresses any compressed file format
@@ -169,5 +169,5 @@ function extract {
 }
 
 _git_current_branch() {
-	git branch | grep \* | cut -d ' ' -f2
+  git branch | grep \* | cut -d ' ' -f2
 }

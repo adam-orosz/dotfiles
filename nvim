@@ -69,19 +69,19 @@ call plug#end()
 " Let mapleader be comma.
 let mapleader = ","
 
-" Color Settings
-"set background=light
-"colorscheme gruvbox
-"set termguicolors
-"let g:airline_theme='solarized'
-"let g:gruvbox_contrast_light="soft"
+" Solorized Color Settings
+set background=light
+colorscheme gruvbox
+let g:airline_theme='solarized'
+let g:gruvbox_contrast_light="soft"
 
 " Material Color Settings
-set background=dark
-colorscheme material
-let g:material_theme_style = 'default'
-let g:airline_theme = 'material'
-let g:lightline = { 'colorscheme': 'material_vim' }
+"set background=dark
+"colorscheme material
+"let g:material_theme_style = 'default'
+"let g:airline_theme = 'material'
+"let g:lightline = { 'colorscheme': 'material_vim' }
+
 if (has("nvim"))
   let $NVIM_TUI_ENABLE_TRUE_COLOR=1
 endif
@@ -171,7 +171,7 @@ set wildignore+=*/tmp/*,*/out/*,*/.git/*,*.so,*.swp,*.zip,*/environments-env/*,*
 
 " highlightedyank
 hi HighlightedyankRegion cterm=reverse gui=reverse
-let g:highlightedyank_highlight_duration = 300
+let g:highlightedyank_highlight_duration = 200
 
 let g:ag_working_path_mode="r"
 
@@ -200,6 +200,7 @@ nnoremap <silent> <Leader>/ :nohlsearch<CR>
 "----------------------------
 " Navigation
 "----------------------------
+" Disable use of arrow keys in normal more
 noremap <Up> <NOP>
 noremap <Down> <NOP>
 noremap <Left> <NOP>

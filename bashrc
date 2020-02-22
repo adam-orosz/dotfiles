@@ -97,8 +97,8 @@ color-diff-kubectl() {
     | jq -c --unbuffered . \
     | bash -c 'PREV="{}"; while read -r NEXT; do diff -u <(echo -E "$PREV" \
     | jq .) <(echo -E "$NEXT" \
-	| jq .); PREV=$NEXT; echo; done' \
-	| colordiff
+    | jq .); PREV=$NEXT; echo; done' \
+    | colordiff
 }
 
 alias knodesusage='kubectl describe nodes | grep -A5 "Allocated resources"'

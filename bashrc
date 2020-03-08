@@ -47,9 +47,13 @@ alias c='clear'
 alias fhere='find . -name'
 alias mkdir='mkdir -pv'
 
+alias envuo='environments use-orchestra'
+alias envu='environments use'
+
 ##########
 ## History
 ##########
+export PROMPT_COMMAND="${PROMPT_COMMAND}; "'if [ "$(id -u)" -ne 0 ]; then echo "$(date +%Y-%m-%d.%H:%M:%S) $(pwd) $(history 1)" >> ~/.logs/bash-history-$(date +%Y-%m-%d).log; fi'
 export HISTCONTROL=ignoredups:erasedups # avoid duplicates
 shopt -s histappend # append history when shell exists
 # After each command, append to the history file and re-read it
@@ -85,8 +89,13 @@ export PATH=$PATH:${HOME}/.cargo/bin
 # kubectl
 #########
 alias k='kubectl'
-[ -f ~/.kubectl_aliases ] && . ~/.kubectl_aliases
+[ -f ~/.dotfiles/kubectl-aliases ] && source ~/.dotfiles/kubectl-aliases
 complete -F __start_kubectl k
+
+alias nsys='--namespace=kube-system'
+alias oyaml='-o yaml'
+alias ojson='-o json'
+alias owide='-o wide'
 
 color-diff-kubectl() {
   local verb resource id
@@ -171,3 +180,4 @@ function extract {
 _git_current_branch() {
   git branch | grep \* | cut -d ' ' -f2
 }
+

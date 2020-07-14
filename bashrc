@@ -24,10 +24,9 @@ if [ "$(uname)" == "Darwin" ]; then
   [ -f /"${brewPrefix}/etc/bash_completion" ] && . "${brewPrefix}/etc/bash_completion"
 else
   [ -f /usr/local/etc/bash_completion  ] && . /usr/local/etc/bash_completion
+  [ -f /etc/profile.d/bash_completion.sh ] && source /etc/profile.d/bash_completion.sh
 fi
 
-# bash completion
-source <(kubectl completion bash)
 
 # cli fuzzy finder
 [ -f ~/.fzf.bash ] && source ~/.fzf.bash
@@ -49,6 +48,7 @@ alias mkdir='mkdir -pv'
 
 alias envuo='environments use-orchestra'
 alias envu='environments use'
+
 
 ##########
 ## History
@@ -88,14 +88,11 @@ export PATH=$PATH:${HOME}/.cargo/bin
 #########
 # kubectl
 #########
-alias k='kubectl'
-[ -f ~/.dotfiles/kubectl-aliases ] && source ~/.dotfiles/kubectl-aliases
-complete -F __start_kubectl k
+# bash completion
+source <(kubectl completion bash)
 
-alias nsys='--namespace=kube-system'
-alias oyaml='-o yaml'
-alias ojson='-o json'
-alias owide='-o wide'
+[ -f ~/.kubectl-aliases ] && source ~/.kubectl-aliases
+complete -F __start_kubectl k
 
 color-diff-kubectl() {
   local verb resource id

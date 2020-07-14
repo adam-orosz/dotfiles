@@ -22,7 +22,7 @@ echo " ---> Updating and Upgrading packages..."
 CLOUD_SDK_SOURCE="/etc/apt/sources.list.d/google-cloud-sdk.list"
 if [[ ! -f "${CLOUD_SDK_SOURCE}" ]]; then
     echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] http://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a "${CLOUD_SDK_SOURCE}"
-    curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key --keyring /usr/share/keyrings/cloud.google.gpg add -    
+    curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key --keyring /usr/share/keyrings/cloud.google.gpg add -
 fi
 
 sudo apt-get update
@@ -42,6 +42,7 @@ sudo apt-get install -y \
     gdb \
     git \
     git-crypt \
+    gnome-tweaks \
     gnupg \
     gnupg2 \
     google-cloud-sdk \
@@ -94,39 +95,20 @@ sudo snap install node --classic --channel=10 || true
 curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -
 sudo apt-get install nodejs
 
-if ! [[ -x "$(command -v go)" ]]; then
+if ! go version | grep --silent --extended-regexp 'go1\.14\.1'; then
+    export GO_VERSION="1.14.1"
     echo " ---> Installing Go"
-    export GO_VERSION="1.13.8"
     wget "https://dl.google.com/go/go${GO_VERSION}.linux-amd64.tar.gz"
+    sudo rm -rf /usr/local/go
     sudo tar -C /usr/local -xzf "go${GO_VERSION}.linux-amd64.tar.gz"
     rm -f "go${GO_VERSION}.linux-amd64.tar.gz"
 fi
-curl https://raw.githubusercontent.com/golang/dep/master/install.sh | INSTALL_DIRECTORY=/tmp sh && \
-	sudo mv /tmp/dep /usr/local/bin
 
-if ! [[ -x "$(command -v kubectl)" ]]; then
+if ! kubectl version --client=true --short=true | grep --silent --extended-regexp 'v1\.15\.11'; then
+    export K8S_VERSION="1.15.11"
     echo " ---> Installing kubectl"
-    sudo curl -L -o /usr/local/bin/kubectl https://storage.googleapis.com/kubernetes-release/release/v1.13.11/bin/linux/amd64/kubectl
+    sudo curl -L -o /usr/local/bin/kubectl https://storage.googleapis.com/kubernetes-release/release/v1.15.11/bin/linux/amd64/kubectl
     sudo chmod 755 /usr/local/bin/kubectl
-fi
-
-if ! [[ -x "$(command -v minikube)" ]]; then
-	curl -Lo minikube https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
-	chmod +x minikube
-	sudo mv minikube /usr/local/bin/
-fi
-
-if ! [[ -x "$(command -v protoc)" ]]; then
-    echo " ---> Installing protoc"
-    export PROTOBUF_VERSION="3.8.0"
-    mkdir -p protobuf_install
-    pushd protobuf_install
-    wget https://github.com/protocolbuffers/protobuf/releases/download/v${PROTOBUF_VERSION}/protoc-${PROTOBUF_VERSION}-linux-x86_64.zip
-    unzip protoc-${PROTOBUF_VERSION}-linux-x86_64.zip
-    sudo mv bin/protoc /usr/local/bin
-    sudo mv include/* /usr/local/include/
-    popd
-    rm -rf protobuf_install
 fi
 
 if ! [[ -x "$(command -v yq)" ]]; then
@@ -150,19 +132,33 @@ fi
 
 if [[ ! -d "${HOME}/.fzf" ]]; then
     echo " ---> Installing fzf"
-    git clone https://github.com/junegunn/fzf "${HOME}/.fzf"
-    pushd "${HOME}/.fzf"
-    git remote set-url origin git@github.com:junegunn/fzf.git
-    ${HOME}/.fzf/install --bin --64 --no-zsh --no-fish
-    popd
+    git clone --depth 1 https://github.com/junegunn/fzf.git "${HOME}/.fzf"
+    "${HOME}/.fzf/install"
 fi
 
-if [[ ! -d "${HOME}/.tmux/plugins" ]]; then
-    echo " ---> Installing tmux plugins"
+echo " ---> Installing tmux plugins"
+if [[ ! -d "${HOME}/.tmux/plugins/tpm" ]]; then
     git clone https://github.com/tmux-plugins/tpm "${HOME}/.tmux/plugins/tpm"
+fi
+if [[ ! -d "${HOME}/.tmux/plugins/tmux-open" ]]; then
     git clone https://github.com/tmux-plugins/tmux-open.git "${HOME}/.tmux/plugins/tmux-open"
+fi
+if [[ ! -d "${HOME}/.tmux/plugins/tmux-yank" ]]; then
     git clone https://github.com/tmux-plugins/tmux-yank.git "${HOME}/.tmux/plugins/tmux-yank"
+fi
+if [[ ! -d "${HOME}/.tmux/plugins/tmux-prefix-highlight" ]]; then
     git clone https://github.com/tmux-plugins/tmux-prefix-highlight.git "${HOME}/.tmux/plugins/tmux-prefix-highlight"
+fi
+
+echo " ---> Installing gnome extensions"
+gnome_extensions_path="${HOME}/.local/share/gnome-shell/extensions"
+
+if [[ ! -d "${gnome_extensions_path}/disable-workspace-switcher-popup@github.com" ]]; then
+  git clone git://github.com/windsorschmidt/disable-workspace-switcher-popup "${gnome_extensions_path}/disable-workspace-switcher-popup@github.com"
+fi
+
+if [[ ! -d "${gnome_extensions_path}/clipboard-indicator@tudmotu.com" ]]; then
+  git clone https://github.com/Tudmotu/gnome-shell-extension-clipboard-indicator.git "${gnome_extensions_path}/clipboard-indicator@tudmotu.com"
 fi
 
 echo " ---> Adding user to docker group"

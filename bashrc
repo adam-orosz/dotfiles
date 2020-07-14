@@ -23,10 +23,8 @@ if [ "$(uname)" == "Darwin" ]; then
   export PATH="${brewPrefix}/opt/gnu-tar/libexec/gnubin:${PATH}"
   [ -f /"${brewPrefix}/etc/bash_completion" ] && . "${brewPrefix}/etc/bash_completion"
 else
-  [ -f /usr/local/etc/bash_completion  ] && . /usr/local/etc/bash_completion
-  [ -f /etc/profile.d/bash_completion.sh ] && source /etc/profile.d/bash_completion.sh
+  [ -f /usr/share/bash-completion/bash_completion ] && source /usr/share/bash-completion/bash_completion
 fi
-
 
 # cli fuzzy finder
 [ -f ~/.fzf.bash ] && source ~/.fzf.bash
@@ -75,7 +73,7 @@ alias ggpull='git pull origin $(_git_current_branch)'
 ###########
 # Go Config
 ###########
-export GOROOT=/usr/local/go
+export GOROOT=/usr/lib/go
 export GOPATH=${HOME}/code/go
 export PATH=$PATH:${GOPATH}/bin
 export PATH=$PATH:${GOROOT}/bin

@@ -1,23 +1,15 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-
 from __future__ import print_function
 import itertools
 import os.path
 import sys
 
-try:
-    xrange  # Python 2
-except NameError:
-    xrange = range  # Python 3
-
 
 def main():
     # (alias, full, allow_when_oneof, incompatible_with)
     cmds = [('k', 'kubectl', None, None)]
-
     globs = [('sys', '--namespace=kube-system', None, ['sys'])]
-
     ops = [
         ('g', 'get', None, None),
         ('d', 'describe', None, None),
@@ -26,30 +18,47 @@ def main():
         ('lof', 'logs -f', None, None),
         ('lofp', 'logs -f -p', None, None),
         ]
-
     res = [
         ('po', 'pods', ['g', 'd'], None),
         ('dep', 'deployment', ['g', 'd'], None),
+        ('sts', 'statefulsets', ['g', 'd'], None),
+        ('ds', 'daemonset', ['g', 'd'], None),
+        ('rs', 'replicaset', ['g', 'd'], None),
         ('svc', 'service', ['g', 'd'], None),
+        ('pvc', 'persistentvolumeclaim', ['g', 'd'], None),
+        ('pv', 'persistentvolume', ['g', 'd'], None),
+        ('sc', 'storageclass', ['g', 'd'], None),
+        ('sa', 'serviceaccount', ['g', 'd'], None),
+        ('ro', 'role', ['g', 'd'], None),
+        ('rob', 'rolebinding', ['g', 'd'], None),
+        ('cro', 'clusterrole', ['g', 'd'], None),
+        ('crob', 'clusterrolebinding', ['g', 'd'], None),
+        ('pdb', 'poddisruptionbudget', ['g', 'd'], None),
         ('cm', 'configmap', ['g', 'd'], None),
         ('sec', 'secret', ['g', 'd'], None),
-        ('db', 'neo4jdatabase', ['g', 'd'], None),
+        ('jo', 'job', ['g', 'd'], None),
+        ('cjo', 'cronjob', ['g', 'd'], None),
+        ('crd', 'customresourcedefinition', ['g', 'd'], None),
+        ('end', 'endpoint', ['g', 'd'], None),
+        ('ev', 'event', ['g', 'd'], None),
+        ('ev', 'event', ['g', 'd'], None),
+        ('db', 'neo4jdatabase', ['g', 'd'], 'sys'),
         ('cn', 'canary', ['g', 'd'], ['sys']),
-        ('fl', 'canary', ['g', 'd'], ['sys']),
+        ('fl', 'canaryflock', ['g', 'd'], ['sys']),
         ('no', 'nodes', ['g', 'd'], ['sys']),
         ('ns', 'namespaces', ['g', 'd'], ['sys']),
         ]
-
     args = [
         ('oyaml', '-o=yaml', ['g'], ['owide', 'ojson']),
         ('owide', '-o=wide', ['g'], ['oyaml', 'ojson']),
         ('ojson', '-o=json', ['g'], ['owide', 'oyaml']),
         ]
-
     # these accept a value, so they need to be at the end and
     # mutually exclusive within each other.
-    positional_args = []
-
+    positional_args = [
+        ('l', '-l', ['g', 'd'], []),
+        ('n', '--namespace', ['g', 'd', 'lo', 'lof', 'lofp', 'ex'], ['ns', 'no', 'sys'])
+    ]
     # [(part, optional, take_exactly_one)]
     parts = [
         (cmds, False, True),
@@ -59,17 +68,46 @@ def main():
         (args, True, False),
         (positional_args, True, True),
         ]
-
     out = gen(parts)
     out = filter(is_valid, out)
 
-    # prepare output
-    if not sys.stdout.isatty():
-        header_path = \
-            os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                         'license_header')
-        with open(header_path, 'r') as f:
-            print(f.read())
+    ops_help = ["{} = {}".format(o[0], o[1]) for o in ops]
+    res_help = ["{} = {}".format(r[0], r[1]) for r in res]
+    args_help = ["{} = {}".format(a[0], a[1]) for a in args]
+    pos_args_help = ["{} = {}".format(a[0], a[1]) for a in positional_args]
+
+    print("""kubectl-aliases-help() {{
+    cat <<EOF
+A bunch of convenient shell aliases for kubectl.
+
+Examples:
+    k - kubectl
+    kg - kubectl get
+    kgpo - kubectl get pod
+
+    ksysgpo - kubectl --namespace=kube-system get pod
+
+    kgsvc - kubectl get service
+    kgdep - kubectl get deployment
+
+    kgpooyaml - kubectl get pods -o yaml
+
+    kgdbl dbid=deadbeef
+
+Commands:
+    {}
+
+Resources
+    {}
+
+Arguments:
+    {}
+
+Positional Arguments:
+    {}
+EOF
+}}""".format('\n    '.join(ops_help), '\n    '.join(res_help), '\n    '.join(args_help), '\n    '.join(pos_args_help)))
+
     for cmd in out:
         print("alias {}='{}'".format(''.join([a[0] for a in cmd]),
               ' '.join([a[1] for a in cmd])))
@@ -80,22 +118,18 @@ def gen(parts):
     for (items, optional, take_exactly_one) in parts:
         orig = list(out)
         combos = []
-
         if optional and take_exactly_one:
             combos = combos.append([])
-
         if take_exactly_one:
             combos = combinations(items, 1, include_0=optional)
         else:
             combos = combinations(items, len(items), include_0=optional)
-
         # permutate the combinations if optional (args are not positional)
         if optional:
             new_combos = []
             for c in combos:
                 new_combos += list(itertools.permutations(c))
             combos = new_combos
-
         new_out = []
         for segment in combos:
             for stuff in orig:
@@ -106,7 +140,6 @@ def gen(parts):
 
 def is_valid(cmd):
     for i in xrange(0, len(cmd)):
-
         # check at least one of requirements are in the cmd
         requirements = cmd[i][2]
         if requirements:
@@ -120,7 +153,6 @@ def is_valid(cmd):
                     break
             if not found:
                 return False
-
         # check none of the incompatibilities are in the cmd
         incompatibilities = cmd[i][3]
         if incompatibilities:
@@ -134,7 +166,6 @@ def is_valid(cmd):
                     break
             if found:
                 return False
-
     return True
 
 
@@ -149,8 +180,5 @@ def combinations(a, n, include_0=True):
 
 def diff(a, b):
     return list(set(a) - set(b))
-
-
 if __name__ == '__main__':
     main()
-

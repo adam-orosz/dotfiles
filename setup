@@ -23,6 +23,7 @@ mkdir -p ~/.logs
 [ -f ~/.bashrc ] || ln -s $(pwd)/bashrc ~/.bashrc
 [ -f ~/.tmux.conf ] || ln -s $(pwd)/tmuxconf ~/.tmux.conf
 [ -f ~/.gitconfig ] || ln -s $(pwd)/gitconfig ~/.gitconfig
+[ -f ~/.kubectl-aliases ] || ln -s $(pwd)/kubectl-aliases ~/.kubectl-aliases
 
 if [[ "$(uname)" == "Darwin" ]]; then
   ./setup-macos

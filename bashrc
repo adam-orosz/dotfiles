@@ -73,7 +73,7 @@ alias ggpull='git pull origin $(_git_current_branch)'
 ###########
 # Go Config
 ###########
-export GOROOT=/usr/lib/go
+export GOROOT=/usr/local/go
 export GOPATH=${HOME}/code/go
 export PATH=$PATH:${GOPATH}/bin
 export PATH=$PATH:${GOROOT}/bin

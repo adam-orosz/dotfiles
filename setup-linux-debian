@@ -21,6 +21,8 @@ if [[ ! -f "${CLOUD_SDK_SOURCE}" ]]; then
     curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key --keyring /usr/share/keyrings/cloud.google.gpg add -
 fi
 
+sudo add-apt-repository ppa:deadsnakes/ppa
+
 sudo apt-get update
 sudo apt-get upgrade -y
 
@@ -81,9 +83,9 @@ sudo pip3 install "awscli>=1.14.28,<2.0.0"
 sudo pip3 install --upgrade yq
 
 sudo snap install shellcheck || true
-sudo snap install node --classic --channel=10 || true
+sudo snap install node --classic --channel=12 || true
 
-curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -
+curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
 sudo apt-get install nodejs
 
 if ! go version | grep --silent --extended-regexp 'go1\.14\.1'; then

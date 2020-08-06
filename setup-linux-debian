@@ -75,6 +75,13 @@ sudo apt-get install -y \
     tree \
     unzip \
     wget \
+    i3 \
+    xbacklight \
+    alsa-utils \
+    pulseaudio \
+    xorg \
+    xserver-xorg-video-intel \
+    dconf-editor \
     --no-install-recommends \
 
 sudo rm -rf /var/lib/apt/lists/*

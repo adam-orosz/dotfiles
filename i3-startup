@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+
+set -o pipefail -o errtrace -o errexit -o nounset
+shopt -s inherit_errexit
+
+[[ -n "${TRACE:-}"  ]] && set -o xtrace
+
+declare errmsg="ERROR (${0##*/})":
+trap 'echo >&2 $errmsg trap on error \(rc=${PIPESTATUS[@]}\) near line $LINENO' ERR
+
+main() {
+  enable_touchpad_props
+}
+
+enable_touchpad_props() {
+  local touchpad_id
+  touchpad_id="$(get_touchpad_id)"
+  readonly touchpad_id
+
+  enable_prop "${touchpad_id}" "Natural Scrolling Enabled ("
+  enable_prop "${touchpad_id}" "Tapping Enabled ("
+}
+
+get_touchpad_id() {
+  xinput list | grep -i "Touchpad" | cut -d'=' -f2 | cut -d'[' -f1 | tr -d '[:space:]'
+}
+
+enable_prop() {
+  local id prop_name prop_id
+  id="$1"; shift
+  prop_name="$1"; shift
+  readonly id prop_name
+
+  prop_id="$(xinput list-props "${id}" | grep -i "${prop_name}" | cut -d'(' -f2 | cut -d')' -f1 | tr -d '[:space:]')"
+  readonly prop_id
+
+  xinput --set-prop "${id}" "${prop_id}" "1"
+}
+
+main "$@"

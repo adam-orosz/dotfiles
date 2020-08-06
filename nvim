@@ -53,7 +53,6 @@ Plug 'lifepillar/pgsql.vim'
 Plug 'pangloss/vim-javascript'
 Plug 'plasticboy/vim-markdown'
 Plug 'rodjek/vim-puppet'
-Plug 'zchee/deoplete-go', { 'do': 'make'}
 Plug 'zchee/deoplete-jedi'
 Plug 'zimbatm/haproxy.vim'
 
@@ -117,6 +116,15 @@ set showcmd
 set cmdheight=2
 set foldcolumn=2
 set splitright
+
+function! NumberToggle()
+  if (&relativenumber == 1)
+    set norelativenumber
+  else
+    set relativenumber
+  endif
+endfunction
+nnoremap <leader>nt :call NumberToggle()<cr>
 
 " neovim specific settings
 if has('nvim')
@@ -328,6 +336,8 @@ let g:neomake_sh_shellcheck_maker = {
             \ '%I%f:%l:%c: note: %m',
 \ }
 
+let g:neomake_golang_enabled_makers = []
+
 "----------------------------
 " nerdtree conf
 "----------------------------
@@ -382,12 +392,6 @@ let NERDTreeMinimalUI = 1
 let NERDTreeDirArrows = 1
 
 "----------------------------
-" deoplete-go conf
-"----------------------------
-let g:deoplete#sources#go#pointer = 1
-let g:deoplete#enable_at_startup = 1
-
-"----------------------------
 " jedi conf
 "----------------------------
 
@@ -416,9 +420,9 @@ let g:go_auto_type_info = 1
 " Highlight variable uses
 let g:go_auto_sameids = 1
 
-map <C-n> :cnext<CR>
-map <C-m> :cprevious<CR>
-nnoremap <leader>a :cclose<CR>
+map <C-Down> :cnext<CR>
+map <C-Up> :cprevious<CR>
+nnoremap <leader>a :windo lcl\|ccl<CR>
 autocmd FileType go nmap <leader>r <Plug>(go-run)
 autocmd FileType go nmap <leader>t <Plug>(go-test)
 autocmd FileType go nmap <leader>c <Plug>(go-coverage-toggle)
@@ -436,6 +440,8 @@ endfunction
 autocmd FileType go nmap <leader>b :<C-u>call <SID>build_go_files()<CR>
 
 let g:go_fmt_command = "goimports"
+let g:go_list_type = "quickfix"
+let g:go_jump_to_error = 0
 
 "----------------------------
 " Bash

@@ -11,6 +11,8 @@ source ${HOME}/.mpprompt
 
 # PATH
 export PATH=${PATH}:${HOME}/code/bin
+export PATH="${PATH}:${HOME}/.local/bin"
+
 
 if [ "$(uname)" == "Darwin" ]; then
   brewPrefix=$(brew --prefix 2> /dev/null || echo /usr/local)

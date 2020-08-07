@@ -68,6 +68,7 @@ sudo apt-get install -y \
     python3-pip \
     python3-setuptools \
     python3-wheel \
+    flake8 \
     openjdk-8-jdk \
     silversearcher-ag \
     software-properties-common \
@@ -87,7 +88,7 @@ sudo apt-get install -y \
 sudo rm -rf /var/lib/apt/lists/*
 
 sudo pip3 install "awscli>=1.14.28,<2.0.0"
-sudo pip3 install --upgrade yq
+sudo pip3 install --upgrade yq jedi-language-server
 
 sudo snap install shellcheck || true
 sudo snap install node --classic --channel=12 || true

@@ -21,7 +21,7 @@ if [[ ! -f "${CLOUD_SDK_SOURCE}" ]]; then
     curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key --keyring /usr/share/keyrings/cloud.google.gpg add -
 fi
 
-sudo add-apt-repository ppa:deadsnakes/ppa
+# sudo add-apt-repository ppa:deadsnakes/ppa
 
 sudo apt-get update
 sudo apt-get upgrade -y
@@ -70,28 +70,19 @@ sudo apt-get install -y \
     python3-wheel \
     flake8 \
     openjdk-8-jdk \
+    shellcheck \
     silversearcher-ag \
     software-properties-common \
     tmux \
     tree \
     unzip \
     wget \
-    i3 \
-    xbacklight \
-    alsa-utils \
-    pulseaudio \
-    xorg \
-    xserver-xorg-video-intel \
-    dconf-editor \
     --no-install-recommends \
 
 sudo rm -rf /var/lib/apt/lists/*
 
 sudo pip3 install "awscli>=1.14.28,<2.0.0"
 sudo pip3 install --upgrade yq jedi-language-server
-
-sudo snap install shellcheck || true
-sudo snap install node --classic --channel=12 || true
 
 curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
 sudo apt-get install nodejs

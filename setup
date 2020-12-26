@@ -25,14 +25,7 @@ mkdir -p ~/.logs
 [ -f ~/.gitconfig ] || ln -s $(pwd)/gitconfig ~/.gitconfig
 [ -f ~/.kubectl-aliases ] || ln -s $(pwd)/kubectl-aliases ~/.kubectl-aliases
 
-if [[ "$(uname)" == "Darwin" ]]; then
-  ./setup-macos
-elif [[ "$(uname)" == "Linux" ]]; then
-  ./setup-linux
-else
-  echo "$(uname) is not supported. Exiting..."
-  exit 1
-fi
+./setup-linux
 
 # vim-plug to autoload
 curl -fLo ~/.vim/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim

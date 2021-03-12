@@ -64,6 +64,7 @@ sudo apt-get install -y \
     protobuf-compiler \
     pwgen \
     python3.7 \
+    python3.7-dev \
     python3-flake8 \
     python3-pip \
     python3-setuptools \
@@ -87,8 +88,8 @@ sudo pip3 install --upgrade yq jedi-language-server
 curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
 sudo apt-get install nodejs
 
-if ! go version | grep --silent --extended-regexp 'go1\.14\.1'; then
-    export GO_VERSION="1.14.1"
+if ! go version | grep --silent --extended-regexp 'go1\.16\.1'; then
+    export GO_VERSION="1.16.1"
     echo " ---> Installing Go"
     wget "https://dl.google.com/go/go${GO_VERSION}.linux-amd64.tar.gz"
     sudo rm -rf /usr/local/go
@@ -97,7 +98,7 @@ if ! go version | grep --silent --extended-regexp 'go1\.14\.1'; then
 fi
 
 if ! kubectl version --client=true --short=true | grep --silent --extended-regexp 'v1\.15\.11'; then
-    export K8S_VERSION="1.15.11"
+    export K8S_VERSION="1.17.15"
     echo " ---> Installing kubectl"
     sudo curl -L -o /usr/local/bin/kubectl https://storage.googleapis.com/kubernetes-release/release/v1.15.11/bin/linux/amd64/kubectl
     sudo chmod 755 /usr/local/bin/kubectl

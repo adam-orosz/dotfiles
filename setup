@@ -25,7 +25,152 @@ mkdir -p ~/.logs
 [ -f ~/.gitconfig ] || ln -s $(pwd)/gitconfig ~/.gitconfig
 [ -f ~/.kubectl-aliases ] || ln -s $(pwd)/kubectl-aliases ~/.kubectl-aliases
 
-./setup-linux
+cat <<EOF >"${HOME}/.profile"
+[ -f ${HOME}/.bashrc ] && . ${HOME}/.bashrc
+
+/usr/bin/keychain --nogui ${HOME}/.ssh/id_rsa
+source ${HOME}/.keychain/${HOSTNAME}-sh
+EOF
+
+mkdir --parents ~/.config
+
+echo " ---> Installing prerequisites"
+sudo apt-get install -y git curl apt-transport-https software-properties-common
+
+echo " ---> Updating and Upgrading packages..."
+
+CLOUD_SDK_SOURCE="/etc/apt/sources.list.d/google-cloud-sdk.list"
+if [[ ! -f "${CLOUD_SDK_SOURCE}" ]]; then
+    echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] http://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a "${CLOUD_SDK_SOURCE}"
+    curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key --keyring /usr/share/keyrings/cloud.google.gpg add -
+fi
+
+sudo add-apt-repository ppa:deadsnakes/ppa
+
+sudo apt-get update
+sudo apt-get upgrade -y
+
+sudo apt-get install -y \
+    apache2-utils \
+    apt-transport-https \
+    build-essential \
+    ca-certificates \
+    clang \
+    cmake \
+    curl \
+    direnv \
+    dnsutils \
+    docker.io \
+    gdb \
+    git \
+    git-crypt \
+    gnome-tweaks \
+    gnupg \
+    gnupg2 \
+    google-cloud-sdk \
+    google-cloud-sdk-app-engine-go \
+    htop \
+    jo \
+    jq \
+    less \
+    lldb \
+    m4 \
+    man \
+    maven \
+    mkdocs \
+    ncdu \
+    netcat-openbsd \
+    openssh-server \
+    packer \
+    parallel \
+    pass \
+    pkg-config \
+    protobuf-compiler \
+    pwgen \
+    python3.9 \
+    python3.9-dev \
+    python3-flake8 \
+    python3-pip \
+    python3-setuptools \
+    python3-wheel \
+    flake8 \
+    openjdk-8-jdk \
+    shellcheck \
+    silversearcher-ag \
+    software-properties-common \
+    tmux \
+    tree \
+    unzip \
+    wget \
+    --no-install-recommends \
+
+sudo rm -rf /var/lib/apt/lists/*
+
+sudo pip3 install "awscli>=1.14.28,<2.0.0"
+sudo pip3 install --upgrade yq jedi-language-server
+
+curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
+sudo apt-get install nodejs
+
+if ! go version | grep --silent --extended-regexp 'go1\.14\.15'; then
+    export GO_VERSION="1.14.15"
+    echo " ---> Installing Go"
+    wget "https://dl.google.com/go/go${GO_VERSION}.linux-amd64.tar.gz"
+    sudo rm -rf /usr/local/go
+    sudo tar -C /usr/local -xzf "go${GO_VERSION}.linux-amd64.tar.gz"
+    rm -f "go${GO_VERSION}.linux-amd64.tar.gz"
+fi
+
+if ! kubectl version --client=true --short=true | grep --silent --extended-regexp 'v1\.17\.15'; then
+    export K8S_VERSION="1.17.15"
+    echo " ---> Installing kubectl"
+    sudo curl -L -o /usr/local/bin/kubectl https://storage.googleapis.com/kubernetes-release/release/v1.17.15/bin/linux/amd64/kubectl
+    sudo chmod 755 /usr/local/bin/kubectl
+fi
+
+if ! [[ -x "$(command -v yq)" ]]; then
+    echo " ---> Installing yq"
+    sudo add-apt-repository ppa:rmescandon/yq
+    sudo apt update
+    sudo apt install yq -y
+fi
+
+echo " ---> Installing neovim"
+sudo apt update -y
+sudo apt install neovim -y
+
+if ! [[ -x "$(command -v jump)" ]]; then
+    echo " ---> Installing jump"
+    export JUMP_VERSION="0.23.0"
+    wget https://github.com/gsamokovarov/jump/releases/download/v${JUMP_VERSION}/jump_${JUMP_VERSION}_amd64.deb
+    sudo dpkg -i jump_${JUMP_VERSION}_amd64.deb
+    rm -f jump_${JUMP_VERSION}_amd64.deb
+fi
+
+if [[ ! -d "${HOME}/.fzf" ]]; then
+    echo " ---> Installing fzf"
+    git clone --depth 1 https://github.com/junegunn/fzf.git "${HOME}/.fzf"
+    "${HOME}/.fzf/install"
+fi
+
+echo " ---> Installing tmux plugins"
+if [[ ! -d "${HOME}/.tmux/plugins/tpm" ]]; then
+    git clone https://github.com/tmux-plugins/tpm "${HOME}/.tmux/plugins/tpm"
+fi
+if [[ ! -d "${HOME}/.tmux/plugins/tmux-open" ]]; then
+    git clone https://github.com/tmux-plugins/tmux-open.git "${HOME}/.tmux/plugins/tmux-open"
+fi
+if [[ ! -d "${HOME}/.tmux/plugins/tmux-yank" ]]; then
+    git clone https://github.com/tmux-plugins/tmux-yank.git "${HOME}/.tmux/plugins/tmux-yank"
+fi
+if [[ ! -d "${HOME}/.tmux/plugins/tmux-prefix-highlight" ]]; then
+    git clone https://github.com/tmux-plugins/tmux-prefix-highlight.git "${HOME}/.tmux/plugins/tmux-prefix-highlight"
+fi
+
+echo " ---> Adding user to docker group"
+sudo gpasswd -a "${USER}" docker
+sudo usermod -aG docker mattias
+sudo systemctl enable docker
 
 # vim-plug to autoload
 curl -fLo ~/.vim/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim

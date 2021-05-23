@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
 set -o pipefail -o errtrace -o errexit -o nounset
-shopt -s inherit_errexit
 
 [[ -n "${TRACE:-}" ]] && set -o xtrace
 

@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
 set -o pipefail -o errtrace -o errexit -o nounset
-shopt -s inherit_errexit
 
 [[ -n "${TRACE:-}" ]] && set -o xtrace
 
@@ -11,6 +10,12 @@ trap 'echo >&2 $errmsg trap on error \(rc=${PIPESTATUS[@]}\) near line $LINENO' 
 # ask for the administrator password upfront
 sudo -v
 
+readonly EKSCTL_VERSION="0.47.0"
+readonly KUBECTL_VERSION="1.18.17"
+readonly KIND_VERSION="0.7.0"
+readonly KUSTOMIZE_VERSION="3.8.2"
+
+mkdir -p ~/.config
 mkdir -p ~/.config/nvim
 mkdir -p ~/code/go
 mkdir -p ~/code/python
@@ -18,161 +23,85 @@ mkdir -p ~/code/rust
 mkdir -p ~/code/bin
 mkdir -p ~/.logs
 
-[ -f ~/.config/nvim/init.vim ] || ln -s $(pwd)/nvim ~/.config/nvim/init.vim
-[ -f ~/.mpprompt ] || ln -s $(pwd)/mpprompt ~/.mpprompt
-[ -f ~/.bashrc ] || ln -s $(pwd)/bashrc ~/.bashrc
-[ -f ~/.tmux.conf ] || ln -s $(pwd)/tmuxconf ~/.tmux.conf
-[ -f ~/.gitconfig ] || ln -s $(pwd)/gitconfig ~/.gitconfig
-[ -f ~/.kubectl-aliases ] || ln -s $(pwd)/kubectl-aliases ~/.kubectl-aliases
+[ -f ~/.config/nvim/init.vim ] || ln -s "$(pwd)/nvim" ~/.config/nvim/init.vim
+[ -f ~/.mpprompt ] || ln -s "$(pwd)/mpprompt" ~/.mpprompt
+[ -f ~/.bashrc ] || ln -s "$(pwd)/bashrc" ~/.bashrc
+[ -f ~/.tmux.conf ] || ln -s "$(pwd)/tmuxconf" ~/.tmux.conf
+[ -f ~/.gitconfig ] || ln -s "$(pwd)/gitconfig" ~/.gitconfig
+[ -f ~/.kubectl-aliases ] || ln -s "$(pwd)/kubectl-aliases" ~/.kubectl-aliases
+[ -f ~/.macos ] || ln -s "$(pwd)/macos" ~/.macos
 
-cat <<EOF >"${HOME}/.profile"
-[ -f ${HOME}/.bashrc ] && . ${HOME}/.bashrc
+if ! which -s brew; then
+  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+fi
 
-/usr/bin/keychain --nogui ${HOME}/.ssh/id_rsa
-source ${HOME}/.keychain/${HOSTNAME}-sh
+cat <<EOF >"${HOME}/.bash_profile"
+[ -f "${HOME}/.bashrc" ] && . "${HOME}/.bashrc"
+
+# node@12
+export PATH="/usr/local/opt/node@12/bin:\$PATH"
+export LDFLAGS="-L/usr/local/opt/node@12/lib"
+export CPPFLAGS="-I/usr/local/opt/node@12/include"
+
+# gcloud
+if [ -f "${HOME}/.google-cloud-sdk/path.bash.inc" ]; then source "${HOME}/.google-cloud-sdk/path.bash.inc"; fi
+if [ -f "${HOME}/.google-cloud-sdk/completion.bash.inc" ]; then source "${HOME}/.google-cloud-sdk/completion.bash.inc"; fi
 EOF
 
-mkdir --parents ~/.config
+read -p "install tools with brew? (y/n) " answer
+case ${answer:0:1} in
+  y|Y)
+    echo "installing tools with brew..."
+    brew bundle
+esac
 
-echo " ---> Installing prerequisites"
-sudo apt-get install -y git curl apt-transport-https software-properties-common
+read -p "load macos conf? (y/n) " answer
+case ${answer:0:1} in
+  y|Y )
+    echo "loading macos conf..."
+    . "${HOME}/.macos"
+  ;;
+esac
 
-echo " ---> Updating and Upgrading packages..."
 
-CLOUD_SDK_SOURCE="/etc/apt/sources.list.d/google-cloud-sdk.list"
-if [[ ! -f "${CLOUD_SDK_SOURCE}" ]]; then
-    echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] http://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a "${CLOUD_SDK_SOURCE}"
-    curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key --keyring /usr/share/keyrings/cloud.google.gpg add -
-fi
+echo "installing tools with pip3..."
+pip3 install --upgrade yq >/dev/null
+pip3 install "awscli>=1.18.201,<1.18.202" >/dev/null
+pip3 install -U crcmod >/dev/null
 
-sudo add-apt-repository ppa:deadsnakes/ppa
+printf "installing eksctl..."
+curl -sL "https://github.com/weaveworks/eksctl/releases/download/${EKSCTL_VERSION}/eksctl_Darwin_amd64.tar.gz" | tar xz -C /tmp \
+  && sudo mv /tmp/eksctl /usr/local/bin
+echo "ok"
 
-sudo apt-get update
-sudo apt-get upgrade -y
+printf "installing kubectl..."
+curl -sLo ./kubectl "https://storage.googleapis.com/kubernetes-release/release/v${KUBECTL_VERSION}/bin/darwin/amd64/kubectl" \
+  && chmod +x ./kubectl \
+  && sudo mv ./kubectl /usr/local/bin/kubectl
+echo "ok"
 
-sudo apt-get install -y \
-    apache2-utils \
-    apt-transport-https \
-    build-essential \
-    ca-certificates \
-    clang \
-    cmake \
-    curl \
-    direnv \
-    dnsutils \
-    docker.io \
-    gdb \
-    git \
-    git-crypt \
-    gnome-tweaks \
-    gnupg \
-    gnupg2 \
-    google-cloud-sdk \
-    google-cloud-sdk-app-engine-go \
-    htop \
-    jo \
-    jq \
-    less \
-    lldb \
-    m4 \
-    man \
-    maven \
-    mkdocs \
-    ncdu \
-    netcat-openbsd \
-    openssh-server \
-    packer \
-    parallel \
-    pass \
-    pkg-config \
-    protobuf-compiler \
-    pwgen \
-    python3.9 \
-    python3.9-dev \
-    python3-flake8 \
-    python3-pip \
-    python3-setuptools \
-    python3-wheel \
-    flake8 \
-    openjdk-8-jdk \
-    shellcheck \
-    silversearcher-ag \
-    software-properties-common \
-    tmux \
-    tree \
-    unzip \
-    wget \
-    --no-install-recommends \
+printf "installing KIND..."
+curl -sLo ./kind "https://github.com/kubernetes-sigs/kind/releases/download/v${KIND_VERSION}/kind-Darwin-amd64" \
+  && chmod +x ./kind \
+  && sudo mv ./kind /usr/local/bin/kind
+echo "ok"
 
-sudo rm -rf /var/lib/apt/lists/*
+printf "installing kustomize..."
+curl -sLo install.sh "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" \
+  && chmod +x install.sh \
+  && ./install.sh "${KUSTOMIZE_VERSION}" >/dev/null \
+  && sudo mv ./kustomize /usr/local/bin/kustomize \
+  && rm -f install.sh
+echo "ok"
 
-sudo pip3 install "awscli>=1.14.28,<2.0.0"
-sudo pip3 install --upgrade yq jedi-language-server
-
-curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
-sudo apt-get install nodejs
-
-if ! go version | grep --silent --extended-regexp 'go1\.14\.15'; then
-    export GO_VERSION="1.14.15"
-    echo " ---> Installing Go"
-    wget "https://dl.google.com/go/go${GO_VERSION}.linux-amd64.tar.gz"
-    sudo rm -rf /usr/local/go
-    sudo tar -C /usr/local -xzf "go${GO_VERSION}.linux-amd64.tar.gz"
-    rm -f "go${GO_VERSION}.linux-amd64.tar.gz"
-fi
-
-if ! kubectl version --client=true --short=true | grep --silent --extended-regexp 'v1\.17\.15'; then
-    export K8S_VERSION="1.17.15"
-    echo " ---> Installing kubectl"
-    sudo curl -L -o /usr/local/bin/kubectl https://storage.googleapis.com/kubernetes-release/release/v1.17.15/bin/linux/amd64/kubectl
-    sudo chmod 755 /usr/local/bin/kubectl
-fi
-
-if ! [[ -x "$(command -v yq)" ]]; then
-    echo " ---> Installing yq"
-    sudo add-apt-repository ppa:rmescandon/yq
-    sudo apt update
-    sudo apt install yq -y
-fi
-
-echo " ---> Installing neovim"
-sudo apt update -y
-sudo apt install neovim -y
-
-if ! [[ -x "$(command -v jump)" ]]; then
-    echo " ---> Installing jump"
-    export JUMP_VERSION="0.23.0"
-    wget https://github.com/gsamokovarov/jump/releases/download/v${JUMP_VERSION}/jump_${JUMP_VERSION}_amd64.deb
-    sudo dpkg -i jump_${JUMP_VERSION}_amd64.deb
-    rm -f jump_${JUMP_VERSION}_amd64.deb
-fi
-
+echo "installing fzf..."
 if [[ ! -d "${HOME}/.fzf" ]]; then
-    echo " ---> Installing fzf"
-    git clone --depth 1 https://github.com/junegunn/fzf.git "${HOME}/.fzf"
-    "${HOME}/.fzf/install"
+  git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
+  ~/.fzf/install
 fi
 
-echo " ---> Installing tmux plugins"
-if [[ ! -d "${HOME}/.tmux/plugins/tpm" ]]; then
-    git clone https://github.com/tmux-plugins/tpm "${HOME}/.tmux/plugins/tpm"
-fi
-if [[ ! -d "${HOME}/.tmux/plugins/tmux-open" ]]; then
-    git clone https://github.com/tmux-plugins/tmux-open.git "${HOME}/.tmux/plugins/tmux-open"
-fi
-if [[ ! -d "${HOME}/.tmux/plugins/tmux-yank" ]]; then
-    git clone https://github.com/tmux-plugins/tmux-yank.git "${HOME}/.tmux/plugins/tmux-yank"
-fi
-if [[ ! -d "${HOME}/.tmux/plugins/tmux-prefix-highlight" ]]; then
-    git clone https://github.com/tmux-plugins/tmux-prefix-highlight.git "${HOME}/.tmux/plugins/tmux-prefix-highlight"
-fi
-
-echo " ---> Adding user to docker group"
-sudo gpasswd -a "${USER}" docker
-sudo usermod -aG docker mattias
-sudo systemctl enable docker
-
-# vim-plug to autoload
-curl -fLo ~/.vim/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+printf "installing vim-plug..."
+curl -fsLo ~/.vim/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+echo "ok"
 
 echo "Complete!"

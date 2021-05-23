@@ -11,6 +11,9 @@
 [push]
     default = current
 
+[pull]
+    rebase = false
+
 [core]
     excludesfile = /Users/mattias/.gitignore_global
 [alias]

@@ -10,10 +10,11 @@ trap 'echo >&2 $errmsg trap on error \(rc=${PIPESTATUS[@]}\) near line $LINENO' 
 # ask for the administrator password upfront
 sudo -v
 
-readonly EKSCTL_VERSION="0.47.0"
-readonly KUBECTL_VERSION="1.18.17"
-readonly KIND_VERSION="0.7.0"
-readonly KUSTOMIZE_VERSION="3.8.2"
+readonly EKSCTL_VERSION="0.61.0"
+readonly KUBECTL_VERSION="1.21.4"
+readonly KIND_VERSION="0.11.1"
+readonly KUSTOMIZE_VERSION="4.4.0"
+readonly GOOGLE_CLOUD_SDK_VERSION="360.0.0"
 
 mkdir -p ~/.config
 mkdir -p ~/.config/nvim
@@ -23,36 +24,49 @@ mkdir -p ~/code/rust
 mkdir -p ~/code/bin
 mkdir -p ~/.logs
 
-[ -f ~/.config/nvim/init.vim ] || ln -s "$(pwd)/nvim" ~/.config/nvim/init.vim
-[ -f ~/.mpprompt ] || ln -s "$(pwd)/mpprompt" ~/.mpprompt
-[ -f ~/.bashrc ] || ln -s "$(pwd)/bashrc" ~/.bashrc
-[ -f ~/.tmux.conf ] || ln -s "$(pwd)/tmuxconf" ~/.tmux.conf
-[ -f ~/.gitconfig ] || ln -s "$(pwd)/gitconfig" ~/.gitconfig
-[ -f ~/.kubectl-aliases ] || ln -s "$(pwd)/kubectl-aliases" ~/.kubectl-aliases
-[ -f ~/.macos ] || ln -s "$(pwd)/macos" ~/.macos
+[[ -f ~/.config/nvim/init.vim ]] || ln -s "$(pwd)/nvim" ~/.config/nvim/init.vim
+[[ -f ~/.mpprompt ]] || ln -s "$(pwd)/mpprompt" ~/.mpprompt
+[[ -f ~/.bashrc ]] || ln -s "$(pwd)/bashrc" ~/.bashrc
+[[ -f ~/.tmux.conf ]] || ln -s "$(pwd)/tmuxconf" ~/.tmux.conf
+[[ -f ~/.kubectl-aliases ]] || ln -s "$(pwd)/kubectl-aliases" ~/.kubectl-aliases
+[[ -f ~/.macos ]] || ln -s "$(pwd)/macos" ~/.macos
 
-if ! which -s brew; then
-  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+if [[ "$(whoami)" == "mattias" ]]; then
+  [[ -f ~/.gitconfig ]] || ln -s "$(pwd)/gitconfig" ~/.gitconfig
 fi
 
 cat <<EOF >"${HOME}/.bash_profile"
-[ -f "${HOME}/.bashrc" ] && . "${HOME}/.bashrc"
+[[ -f "${HOME}/.bashrc" ]] && . "${HOME}/.bashrc"
 
 # node@12
-export PATH="/usr/local/opt/node@12/bin:\$PATH"
-export LDFLAGS="-L/usr/local/opt/node@12/lib"
-export CPPFLAGS="-I/usr/local/opt/node@12/include"
+if [[ "$(uname -m)" == "arm64" ]]; then
+  export PATH="/opt/homebrew/opt/node@12/bin:\$PATH"
+  export LDFLAGS="-L/opt/homebrew/opt/node@12/lib"
+  export CPPFLAGS="-I/opt/homebrew/opt/node@12/include"
+else
+  export PATH="/usr/local/opt/node@12/bin:\$PATH"
+  export LDFLAGS="-L/usr/local/opt/node@12/lib"
+  export CPPFLAGS="-I/usr/local/opt/node@12/include"
+fi
 
 # gcloud
-if [ -f "${HOME}/.google-cloud-sdk/path.bash.inc" ]; then source "${HOME}/.google-cloud-sdk/path.bash.inc"; fi
-if [ -f "${HOME}/.google-cloud-sdk/completion.bash.inc" ]; then source "${HOME}/.google-cloud-sdk/completion.bash.inc"; fi
+if [[ -f "${HOME}/.google-cloud-sdk/path.bash.inc" ]]; then source "${HOME}/.google-cloud-sdk/path.bash.inc"; fi
+if [[ -f "${HOME}/.google-cloud-sdk/completion.bash.inc" ]]; then source "${HOME}/.google-cloud-sdk/completion.bash.inc"; fi
+
+# brew
+[[ "$(uname -m)" == "arm64" ]] && eval "\$(/opt/homebrew/bin/brew shellenv)"
 EOF
+
+if ! which -s brew; then
+  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+  [[ "$(uname -m)" == "arm64" ]] && eval "$(/opt/homebrew/bin/brew shellenv)"
+fi
 
 read -p "install tools with brew? (y/n) " answer
 case ${answer:0:1} in
   y|Y)
     echo "installing tools with brew..."
-    brew bundle
+    brew bundle --no-lock
 esac
 
 read -p "load macos conf? (y/n) " answer
@@ -63,44 +77,46 @@ case ${answer:0:1} in
   ;;
 esac
 
-
 echo "installing tools with pip3..."
 pip3 install --upgrade yq >/dev/null
 pip3 install "awscli>=1.18.201,<1.18.202" >/dev/null
-pip3 install -U crcmod >/dev/null
 
-printf "installing eksctl..."
-curl -sL "https://github.com/weaveworks/eksctl/releases/download/${EKSCTL_VERSION}/eksctl_Darwin_amd64.tar.gz" | tar xz -C /tmp \
-  && sudo mv /tmp/eksctl /usr/local/bin
+printf "installing eksctl... "
+curl -sL "https://github.com/weaveworks/eksctl/releases/download/${EKSCTL_VERSION}/eksctl_Darwin_$(uname -m).tar.gz" | tar xz -C /tmp \
+  && sudo mv /tmp/eksctl /usr/local/bin/eksctl
 echo "ok"
 
-printf "installing kubectl..."
-curl -sLo ./kubectl "https://storage.googleapis.com/kubernetes-release/release/v${KUBECTL_VERSION}/bin/darwin/amd64/kubectl" \
+printf "installing gcloud... "
+curl -sL "https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-${GOOGLE_CLOUD_SDK_VERSION}-darwin-$(uname -m | sed 's/64//').tar.gz" | tar xz -C /tmp \
+  && rm -rf ~/.google-cloud-sdk \
+  && mv /tmp/google-cloud-sdk ~/.google-cloud-sdk
+echo "ok"
+~/.google-cloud-sdk/install.sh
+
+printf "installing kubectl... "
+curl -sLo ./kubectl "https://dl.k8s.io/release/v${KUBECTL_VERSION}/bin/darwin/$(uname -m)/kubectl" \
   && chmod +x ./kubectl \
   && sudo mv ./kubectl /usr/local/bin/kubectl
 echo "ok"
 
-printf "installing KIND..."
-curl -sLo ./kind "https://github.com/kubernetes-sigs/kind/releases/download/v${KIND_VERSION}/kind-Darwin-amd64" \
+printf "installing KIND... "
+curl -sLo ./kind "https://github.com/kubernetes-sigs/kind/releases/download/v${KIND_VERSION}/kind-Darwin-$(uname -m)" \
   && chmod +x ./kind \
   && sudo mv ./kind /usr/local/bin/kind
 echo "ok"
 
-printf "installing kustomize..."
-curl -sLo install.sh "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" \
-  && chmod +x install.sh \
-  && ./install.sh "${KUSTOMIZE_VERSION}" >/dev/null \
-  && sudo mv ./kustomize /usr/local/bin/kustomize \
-  && rm -f install.sh
+printf "installing kustomize... "
+curl -sL "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize/v${KUSTOMIZE_VERSION}/kustomize_v${KUSTOMIZE_VERSION}_darwin_$(uname -m).tar.gz" | tar xz -C /tmp \
+  && sudo mv /tmp/kustomize /usr/local/bin/kustomize
 echo "ok"
 
-echo "installing fzf..."
+echo "installing fzf... "
 if [[ ! -d "${HOME}/.fzf" ]]; then
-  git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
+  git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf >/dev/null
   ~/.fzf/install
 fi
 
-printf "installing vim-plug..."
+printf "installing vim-plug... "
 curl -fsLo ~/.vim/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
 echo "ok"
 

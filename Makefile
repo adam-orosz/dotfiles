@@ -1,7 +1,10 @@
+all: setup
+.PHONY: all
+
 clean:
 	./clean
 .PHONY: clean
 
-setup: clean
+setup:
 	./setup
 .PHONY: setup

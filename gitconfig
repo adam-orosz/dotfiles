@@ -21,3 +21,5 @@
     uncommit = "reset --soft HEAD^"
     squash = "!f(){ git reset --soft HEAD~${1} && git commit --edit -m\"$(git log --format=%B --reverse HEAD..HEAD@{1})\"; };f"
     recent = branch --sort=committerdate
+[url "git@github.com:neo-technology/neo4j-cloud.git"]
+	insteadOf = https://github.com/neo-technology/neo4j-cloud

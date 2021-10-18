@@ -14,7 +14,7 @@ export PATH="${PATH}:${HOME}/code/bin"
 export PATH="${PATH}:${HOME}/.local/bin"
 export PATH="${PATH}:${HOME}/.google-cloud-sdk/bin"
 
-brewPrefix=$(brew --prefix 2> /dev/null || echo /usr/local)
+brewPrefix=$(brew --prefix 2> /dev/null)
 export PATH="${brewPrefix}/opt/coreutils/libexec/gnubin:${PATH}"
 export PATH="${PATH}:/usr/local/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/bin"
 export PATH="${brewPrefix}/opt/gnu-sed/libexec/gnubin:${PATH}"

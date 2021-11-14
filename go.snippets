@@ -1,0 +1,189 @@
+priority 10
+
+# append
+snippet ap "append(slice, value)"
+append(${1:slice}, ${0:value})
+endsnippet
+
+# append assignment
+snippet ap= "a = append(a, value)"
+${1:slice} = append($1, ${0:value})
+endsnippet
+
+# error snippet
+snippet err "Error return" !b
+if err != nil {
+	return ${1:err}
+}
+${0}
+endsnippet
+
+snippet errw "Error return WithStack" !b
+if err != nil {
+	return errors.WithStack(${1:err})
+}
+${0}
+endsnippet
+
+snippet errwm "Error return WithMessage" !b
+if err != nil {
+	return errors.WithMessage(${1:err}, "${2:message %v}")
+}
+${0}
+endsnippet
+
+snippet errwm "Error return WithMessagef" !b
+if err != nil {
+	return errors.WithMessagef(${1:err}, "${2:message %v}", ${3:args...})
+}
+${0}
+endsnippet
+
+snippet errwm "Error return Errorf" !b
+if err != nil {
+	return errors.Errorf("${1:format}", ${2:args...})
+}
+${0}
+endsnippet
+
+snippet errn, "Error multiple return" !b
+if err != nil {
+	return ${1:nil}, ${2:err}
+}
+${0}
+endsnippet
+
+snippet errn,w "Error multiple return WithStack" !b
+if err != nil {
+	return ${1:nil}, errors.WithStack(${2:err})
+}
+${0}
+endsnippet
+
+snippet errwm "Error multiple return WithMessage" !b
+if err != nil {
+	return ${1:nil}, errors.WithMessage(${2:err}, "${3:message %v}")
+}
+${0}
+endsnippet
+
+snippet errwm "Error multiple return WithMessagef" !b
+if err != nil {
+	return ${1:nil}, errors.WithMessagef(${2:err}, "${3:message %v}", ${4:args...})
+}
+${0}
+endsnippet
+
+snippet errwm "Error multiple return Errorf" !b
+if err != nil {
+	return ${1:nil}, errors.Errorf("${2:format}", ${3:args...})
+}
+${0}
+endsnippet
+
+snippet ew "errors.WithStack"
+errors.WithStack(${1:err})
+endsnippet
+
+snippet ewm "errors.WithMessage"
+errors.WithMessage(${1:err}, "${2:message %v}")
+endsnippet
+
+snippet ewmf "errors.WithMessagef"
+errors.WithMessage(${1:err}, "${2:message %v}", ${3:args...})
+endsnippet
+
+snippet ewf "errors.Errorf"
+errors.Errorf("${1:format}", ${2:args...})
+endsnippet
+
+# struct
+snippet ts "type T struct { ... }"
+type ${1:Type} struct {
+	${0}
+}
+endsnippet
+
+# interface
+snippet ts "type T interface { ... }"
+type ${1:Type} interface {
+	${0}
+}
+endsnippet
+
+# json field tag
+snippet json "\`json:key\`"
+\`json:"${1:`!v  go#util#snippetcase(matchstr(getline("."), '\w\+'))`}"\`
+endsnippet
+
+# function
+snippet func "func Function(...) [error] { ... }"
+func ${1:name}(${2:params})${3/(.+)/ /}`!p opening_par(snip, 3)`$3`!p closing_par(snip, 3)` {
+	${0:${VISUAL}}
+}
+endsnippet
+
+# map
+snippet map "map[Type]Type"
+map[${1:string}]${0:int}
+endsnippet
+
+# method
+snippet meth "func (self Type) Method(...) [error] { ... }"
+func (${1:receiver} ${2:type}) ${3:name}(${4:params})${5/(.+)/ /}`!p opening_par(snip, 5)`$5`!p closing_par(snip, 5)` {
+	${0:${VISUAL}}
+}
+endsnippet
+
+# test function
+snippet test "func TestXYZ(t *testing.T) { ... }"
+func Test${1:Function}(t *testing.T) {
+	${0:${VISUAL}}
+}
+endsnippet
+
+# test table snippet
+snippet tt
+type input struct {
+}
+
+type expected struct {
+}
+
+var tests = map[string]struct {
+	expected string
+	given string
+}{
+	"": {},
+}
+
+for name, tt := range tests {
+	name := name
+	tt := tt
+	t.Run(name, func(t *testing.T){
+		${0}
+	})
+}
+endsnippet
+
+global !p
+import re
+# Automatically wrap return types with parentheses
+def return_values(s):
+	# remove everything wrapped in parentheses
+	s = re.sub("\(.*?\)|\([^)]*$", "", s)
+	return len(s.split(","))
+def opening_par(snip, pos):
+	if return_values(t[pos]) > 1 and not t[pos].startswith("("):
+		snip.rv = "("
+	else:
+		snip.rv = ""
+def closing_par(snip, pos):
+	if return_values(t[pos]) > 1:
+		snip.rv = ")"
+	else:
+		snip.rv = ""
+endglobal
+
+# vim:ft=snippets:
+

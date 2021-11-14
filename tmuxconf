@@ -12,12 +12,11 @@ set-window-option -g mode-keys vi
 
 # window titles
 set-option -g set-titles on
-set-option -g status-bg default
-set-option -g status-fg white
-set-option -g status-justify left
-#set-option -g status-attr dim
+set-option -g status-bg "#fdf6e3"
+set-option -g status-fg "#657b83"
+set-option -g status-justify right
 set-option -g status-right '%H:%Mh'
-set-option -g status-left '#S'
+set-option -g status-left ''
 
 # big history
 set-option -g history-limit 999999999

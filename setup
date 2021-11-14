@@ -10,12 +10,6 @@ trap 'echo >&2 $errmsg trap on error \(rc=${PIPESTATUS[@]}\) near line $LINENO' 
 # ask for the administrator password upfront
 sudo -v
 
-readonly EKSCTL_VERSION="0.61.0"
-readonly KUBECTL_VERSION="1.21.4"
-readonly KIND_VERSION="0.11.1"
-readonly KUSTOMIZE_VERSION="4.4.0"
-readonly GOOGLE_CLOUD_SDK_VERSION="360.0.0"
-
 mkdir -p ~/.config
 mkdir -p ~/.config/nvim
 mkdir -p ~/code/go
@@ -23,6 +17,7 @@ mkdir -p ~/code/python
 mkdir -p ~/code/rust
 mkdir -p ~/code/bin
 mkdir -p ~/.logs
+mkdir -p ~/.vim/mpsnippets
 
 [[ -f ~/.config/nvim/init.vim ]] || ln -s "$(pwd)/nvim" ~/.config/nvim/init.vim
 [[ -f ~/.mpprompt ]] || ln -s "$(pwd)/mpprompt" ~/.mpprompt
@@ -30,6 +25,8 @@ mkdir -p ~/.logs
 [[ -f ~/.tmux.conf ]] || ln -s "$(pwd)/tmuxconf" ~/.tmux.conf
 [[ -f ~/.kubectl-aliases ]] || ln -s "$(pwd)/kubectl-aliases" ~/.kubectl-aliases
 [[ -f ~/.macos ]] || ln -s "$(pwd)/macos" ~/.macos
+
+[[ -f "~/.vim/mpsnippets" ]] || ln -s "$(pwd)/go.snippets" ~/.vim/mpsnippets/go.snippets
 
 if [[ "$(whoami)" == "mattias" ]]; then
   [[ -f ~/.gitconfig ]] || ln -s "$(pwd)/gitconfig" ~/.gitconfig
@@ -39,7 +36,7 @@ cat <<EOF >"${HOME}/.bash_profile"
 [[ -f "${HOME}/.bashrc" ]] && . "${HOME}/.bashrc"
 
 # node@12
-if [[ "$(uname -m)" == "arm64" ]]; then
+if [[ "\$(uname -m)" == "arm64" ]]; then
   export PATH="/opt/homebrew/opt/node@12/bin:\$PATH"
   export LDFLAGS="-L/opt/homebrew/opt/node@12/lib"
   export CPPFLAGS="-I/opt/homebrew/opt/node@12/include"
@@ -54,7 +51,7 @@ if [[ -f "${HOME}/.google-cloud-sdk/path.bash.inc" ]]; then source "${HOME}/.goo
 if [[ -f "${HOME}/.google-cloud-sdk/completion.bash.inc" ]]; then source "${HOME}/.google-cloud-sdk/completion.bash.inc"; fi
 
 # brew
-[[ "$(uname -m)" == "arm64" ]] && eval "\$(/opt/homebrew/bin/brew shellenv)"
+[[ "\$(uname -m)" == "arm64" ]] && eval "\$(/opt/homebrew/bin/brew shellenv)"
 EOF
 
 if ! which -s brew; then
@@ -78,35 +75,68 @@ case ${answer:0:1} in
 esac
 
 echo "installing tools with pip3..."
-pip3 install --upgrade yq >/dev/null
-pip3 install "awscli>=1.18.201,<1.18.202" >/dev/null
+pip3 install --upgrade yq pipenv "awscli>=1.18.201,<1.18.202" neovim flake8 >/dev/null
+
+if [[ "$(uname -m)" == "arm64" ]]; then
+  EKSCTL_VERSION="0.61.0"
+  KUBECTL_VERSION="1.21.4"
+  KIND_VERSION="0.11.1"
+  KUSTOMIZE_VERSION="4.4.0"
+  GOOGLE_CLOUD_SDK_VERSION="360.0.0"
+
+  EKSCTL_URL="https://github.com/weaveworks/eksctl/releases/download/${EKSCTL_VERSION}/eksctl_Darwin_arm64.tar.gz"
+  GCLOUD_URL="https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-${GOOGLE_CLOUD_SDK_VERSION}-darwin-arm.tar.gz"
+  KUBECTL_URL="https://dl.k8s.io/release/v${KUBECTL_VERSION}/bin/darwin/arm64/kubectl"
+  KIND_URL="https://github.com/kubernetes-sigs/kind/releases/download/v${KIND_VERSION}/kind-Darwin-arm64"
+  KUSTOMIZE_URL="https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize/v${KUSTOMIZE_VERSION}/kustomize_v${KUSTOMIZE_VERSION}_darwin_arm64.tar.gz"
+else
+  EKSCTL_VERSION="0.61.0"
+  KUBECTL_VERSION="1.21.4"
+  KIND_VERSION="0.7.0"
+  KUSTOMIZE_VERSION="3.8.3"
+  GOOGLE_CLOUD_SDK_VERSION="360.0.0"
+
+  EKSCTL_URL="https://github.com/weaveworks/eksctl/releases/download/${EKSCTL_VERSION}/eksctl_Darwin_amd64.tar.gz"
+  GCLOUD_URL="https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-${GOOGLE_CLOUD_SDK_VERSION}-darwin-x86_64.tar.gz"
+  KUBECTL_URL="https://dl.k8s.io/release/v${KUBECTL_VERSION}/bin/darwin/amd64/kubectl"
+  KIND_URL="https://github.com/kubernetes-sigs/kind/releases/download/v${KIND_VERSION}/kind-Darwin-amd64"
+  KUSTOMIZE_URL="https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize/v${KUSTOMIZE_VERSION}/kustomize_v${KUSTOMIZE_VERSION}_darwin_amd64.tar.gz"
+fi
 
 printf "installing eksctl... "
-curl -sL "https://github.com/weaveworks/eksctl/releases/download/${EKSCTL_VERSION}/eksctl_Darwin_$(uname -m).tar.gz" | tar xz -C /tmp \
+curl -sL "${EKSCTL_URL}" | tar xz -C /tmp \
   && sudo mv /tmp/eksctl /usr/local/bin/eksctl
 echo "ok"
 
 printf "installing gcloud... "
-curl -sL "https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-${GOOGLE_CLOUD_SDK_VERSION}-darwin-$(uname -m | sed 's/64//').tar.gz" | tar xz -C /tmp \
+curl -sL "${GCLOUD_URL}" | tar xz -C /tmp \
   && rm -rf ~/.google-cloud-sdk \
   && mv /tmp/google-cloud-sdk ~/.google-cloud-sdk
+for additional_component in "alpha" "beta"; do
+  ~/.google-cloud-sdk/install.sh \
+    --command-completion=false \
+    --bash-completion=false \
+    --path-update=false \
+    --usage-reporting=false \
+    --additional-components="${additional_component}" \
+    >/dev/null 2>&1
+done
 echo "ok"
-~/.google-cloud-sdk/install.sh
 
 printf "installing kubectl... "
-curl -sLo ./kubectl "https://dl.k8s.io/release/v${KUBECTL_VERSION}/bin/darwin/$(uname -m)/kubectl" \
+curl -sLo ./kubectl "${KUBECTL_URL}" \
   && chmod +x ./kubectl \
   && sudo mv ./kubectl /usr/local/bin/kubectl
 echo "ok"
 
 printf "installing KIND... "
-curl -sLo ./kind "https://github.com/kubernetes-sigs/kind/releases/download/v${KIND_VERSION}/kind-Darwin-$(uname -m)" \
+curl -sLo ./kind "${KIND_URL}" \
   && chmod +x ./kind \
   && sudo mv ./kind /usr/local/bin/kind
 echo "ok"
 
 printf "installing kustomize... "
-curl -sL "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize/v${KUSTOMIZE_VERSION}/kustomize_v${KUSTOMIZE_VERSION}_darwin_$(uname -m).tar.gz" | tar xz -C /tmp \
+curl -sL "${KUSTOMIZE_URL}" | tar xz -C /tmp \
   && sudo mv /tmp/kustomize /usr/local/bin/kustomize
 echo "ok"
 

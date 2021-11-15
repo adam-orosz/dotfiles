@@ -1,0 +1,118 @@
+#!/usr/bin/env bash
+
+set -o pipefail -o errtrace -o errexit -o nounset
+
+[[ -n "${TRACE:-}" ]] && set -o xtrace
+
+declare errmsg="ERROR (${0##*/})":
+trap 'echo >&2 $errmsg trap on error \(rc=${PIPESTATUS[@]}\) near line $LINENO' ERR
+
+cat <<EOF >"${HOME}/.bash_profile"
+[[ -f "${HOME}/.bashrc" ]] && . "${HOME}/.bashrc"
+
+# node@12
+if [[ "\$(uname -m)" == "arm64" ]]; then
+  export PATH="/opt/homebrew/opt/node@12/bin:\$PATH"
+  export LDFLAGS="-L/opt/homebrew/opt/node@12/lib"
+  export CPPFLAGS="-I/opt/homebrew/opt/node@12/include"
+else
+  export PATH="/usr/local/opt/node@12/bin:\$PATH"
+  export LDFLAGS="-L/usr/local/opt/node@12/lib"
+  export CPPFLAGS="-I/usr/local/opt/node@12/include"
+fi
+
+# gcloud
+if [[ -f "${HOME}/.google-cloud-sdk/path.bash.inc" ]]; then source "${HOME}/.google-cloud-sdk/path.bash.inc"; fi
+if [[ -f "${HOME}/.google-cloud-sdk/completion.bash.inc" ]]; then source "${HOME}/.google-cloud-sdk/completion.bash.inc"; fi
+
+# brew
+[[ "\$(uname -m)" == "arm64" ]] && eval "\$(/opt/homebrew/bin/brew shellenv)"
+
+[[ -f "${HOME}/.local_bash_profile" ]] && source "${HOME}/.local_bash_profile"
+EOF
+
+if ! which -s brew; then
+  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+  [[ "$(uname -m)" == "arm64" ]] && eval "$(/opt/homebrew/bin/brew shellenv)"
+fi
+
+read -p "install tools with brew? (y/n) " answer
+case ${answer:0:1} in
+  y|Y)
+    echo "installing tools with brew..."
+    brew bundle --no-lock
+esac
+
+read -p "load macos conf? (y/n) " answer
+case ${answer:0:1} in
+  y|Y )
+    echo "loading macos conf..."
+    . "${HOME}/.macos"
+  ;;
+esac
+
+echo "installing tools with pip3..."
+pip3 install --upgrade yq pipenv "awscli>=1.18.201,<1.18.202" neovim flake8 >/dev/null
+
+if [[ "$(uname -m)" == "arm64" ]]; then
+  EKSCTL_VERSION="0.61.0"
+  KUBECTL_VERSION="1.21.4"
+  KIND_VERSION="0.11.1"
+  KUSTOMIZE_VERSION="4.4.0"
+  GOOGLE_CLOUD_SDK_VERSION="360.0.0"
+
+  EKSCTL_URL="https://github.com/weaveworks/eksctl/releases/download/${EKSCTL_VERSION}/eksctl_Darwin_arm64.tar.gz"
+  GCLOUD_URL="https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-${GOOGLE_CLOUD_SDK_VERSION}-darwin-arm.tar.gz"
+  KUBECTL_URL="https://dl.k8s.io/release/v${KUBECTL_VERSION}/bin/darwin/arm64/kubectl"
+  KIND_URL="https://github.com/kubernetes-sigs/kind/releases/download/v${KIND_VERSION}/kind-Darwin-arm64"
+  KUSTOMIZE_URL="https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize/v${KUSTOMIZE_VERSION}/kustomize_v${KUSTOMIZE_VERSION}_darwin_arm64.tar.gz"
+else
+  EKSCTL_VERSION="0.61.0"
+  KUBECTL_VERSION="1.21.4"
+  KIND_VERSION="0.7.0"
+  KUSTOMIZE_VERSION="3.8.3"
+  GOOGLE_CLOUD_SDK_VERSION="360.0.0"
+
+  EKSCTL_URL="https://github.com/weaveworks/eksctl/releases/download/${EKSCTL_VERSION}/eksctl_Darwin_amd64.tar.gz"
+  GCLOUD_URL="https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-${GOOGLE_CLOUD_SDK_VERSION}-darwin-x86_64.tar.gz"
+  KUBECTL_URL="https://dl.k8s.io/release/v${KUBECTL_VERSION}/bin/darwin/amd64/kubectl"
+  KIND_URL="https://github.com/kubernetes-sigs/kind/releases/download/v${KIND_VERSION}/kind-Darwin-amd64"
+  KUSTOMIZE_URL="https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize/v${KUSTOMIZE_VERSION}/kustomize_v${KUSTOMIZE_VERSION}_darwin_amd64.tar.gz"
+fi
+
+printf "installing eksctl... "
+curl -sL "${EKSCTL_URL}" | tar xz -C /tmp \
+  && sudo mv /tmp/eksctl /usr/local/bin/eksctl
+echo "ok"
+
+printf "installing gcloud... "
+curl -sL "${GCLOUD_URL}" | tar xz -C /tmp \
+  && rm -rf ~/.google-cloud-sdk \
+  && mv /tmp/google-cloud-sdk ~/.google-cloud-sdk
+for additional_component in "alpha" "beta"; do
+  ~/.google-cloud-sdk/install.sh \
+    --command-completion=false \
+    --bash-completion=false \
+    --path-update=false \
+    --usage-reporting=false \
+    --additional-components="${additional_component}" \
+    >/dev/null 2>&1
+done
+echo "ok"
+
+printf "installing kubectl... "
+curl -sLo ./kubectl "${KUBECTL_URL}" \
+  && chmod +x ./kubectl \
+  && sudo mv ./kubectl /usr/local/bin/kubectl
+echo "ok"
+
+printf "installing KIND... "
+curl -sLo ./kind "${KIND_URL}" \
+  && chmod +x ./kind \
+  && sudo mv ./kind /usr/local/bin/kind
+echo "ok"
+
+printf "installing kustomize... "
+curl -sL "${KUSTOMIZE_URL}" | tar xz -C /tmp \
+  && sudo mv /tmp/kustomize /usr/local/bin/kustomize
+echo "ok"

@@ -16,8 +16,20 @@ _mp_git_branch() {
 }
 
 _k8s_context() {
-  kubectl config current-context >/dev/null 2>&1 || return
-  kubectl config current-context | rev | cut -d'_' -f 1 | rev | cut -d'/' -f2
+  local kubeconfig_context
+  kubeconfig_context="$(kubectl config current-context | rev | cut -d '_' -f1 | rev | cut -d'/' -f2)"
+
+  local ak_context
+  ak_context="none"
+  if [[ -n "${AK_URL}" ]]; then
+    if [[ "${AK_URL}" == *"kind" ]]; then
+      ak_context="$(cut -d'/' -f3 <<<"${AK_URL}")"
+    else
+      ak_context="$(echo "${AK_URL}" | cut -d'/' -f5 | cut -d'?' -f1)"
+    fi
+  fi
+
+  echo "${kubeconfig_context}/${ak_context}"
 }
 
 _set_prompt() {
@@ -38,14 +50,15 @@ _set_prompt() {
     MP_ERR=""
   fi
 
-  local mp_git="$(_mp_git_branch)"
+  mp_git="$(_mp_git_branch)"
   if [[ -n "${mp_git}" ]]; then
     MP_GIT=" ${_green_color}(${mp_git})${_reset}"
   else
     MP_GIT=""
-	fi
+  fi
 
-  local k8s_context="$(_k8s_context)"
+  local k8s_context
+  k8s_context="$(_k8s_context)"
   if [[ -n "${k8s_context}" ]]; then
     MP_K8S_CONTEXT=" ${_magenta_color}{${k8s_context}}${_reset}"
   else

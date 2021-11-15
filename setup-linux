@@ -1,0 +1,123 @@
+#!/usr/bin/env bash
+
+set -o pipefail -o errtrace -o errexit -o nounset
+
+[[ -n "${TRACE:-}" ]] && set -o xtrace
+
+declare errmsg="ERROR (${0##*/})":
+trap 'echo >&2 $errmsg trap on error \(rc=${PIPESTATUS[@]}\) near line $LINENO' ERR
+
+cat <<EOF >"${HOME}/.bash_profile"
+[[ -f "${HOME}/.bashrc" ]] && . "${HOME}/.bashrc"
+[[ -f "${HOME}/.local_bash_profile" ]] && source "${HOME}/.local_bash_profile"
+EOF
+
+echo " ---> Installing prerequisites"
+sudo apt-get install -y git curl apt-transport-https software-properties-common
+
+echo " ---> Updating and Upgrading packages..."
+
+CLOUD_SDK_SOURCE="/etc/apt/sources.list.d/google-cloud-sdk.list"
+if [[ ! -f "${CLOUD_SDK_SOURCE}" ]]; then
+  echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] http://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a "${CLOUD_SDK_SOURCE}"
+  curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key --keyring /usr/share/keyrings/cloud.google.gpg add -
+fi
+
+sudo add-apt-repository ppa:deadsnakes/ppa
+
+sudo apt-get update
+sudo apt-get upgrade -y
+
+sudo apt-get install -y \
+  apache2-utils \
+  apt-transport-https \
+  build-essential \
+  ca-certificates \
+  clang \
+  cmake \
+  curl \
+  direnv \
+  dnsutils \
+  docker.io \
+  gdb \
+  git \
+  git-crypt \
+  gnome-tweaks \
+  gnupg \
+  gnupg2 \
+  google-cloud-sdk \
+  google-cloud-sdk-app-engine-go \
+  htop \
+  jo \
+  jq \
+  less \
+  lldb \
+  m4 \
+  man \
+  maven \
+  mkdocs \
+  ncdu \
+  netcat-openbsd \
+  openssh-server \
+  packer \
+  parallel \
+  pass \
+  pkg-config \
+  protobuf-compiler \
+  pwgen \
+  python3.9 \
+  python3.9-dev \
+  python3-flake8 \
+  python3-pip \
+  python3-setuptools \
+  python3-wheel \
+  flake8 \
+  openjdk-8-jdk \
+  shellcheck \
+  silversearcher-ag \
+  software-properties-common \
+  tmux \
+  tree \
+  unzip \
+  wget \
+  --no-install-recommends
+
+sudo rm -rf /var/lib/apt/lists/*
+
+sudo pip3 install "awscli>=1.14.28,<2.0.0"
+sudo pip3 install --upgrade yq jedi-language-server
+
+curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
+sudo apt-get install nodejs
+
+export GO_VERSION="1.14.15"
+echo " ---> Installing Go"
+wget "https://dl.google.com/go/go${GO_VERSION}.linux-amd64.tar.gz"
+sudo rm -rf /usr/local/go
+sudo tar -C /usr/local -xzf "go${GO_VERSION}.linux-amd64.tar.gz"
+rm -f "go${GO_VERSION}.linux-amd64.tar.gz"
+
+export K8S_VERSION="1.17.15"
+echo " ---> Installing kubectl"
+sudo curl -L -o /usr/local/bin/kubectl https://storage.googleapis.com/kubernetes-release/release/v1.17.15/bin/linux/amd64/kubectl
+sudo chmod 755 /usr/local/bin/kubectl
+
+echo " ---> Installing yq"
+sudo add-apt-repository ppa:rmescandon/yq
+sudo apt update
+sudo apt install yq -y
+
+echo " ---> Installing neovim"
+sudo apt update -y
+sudo apt install neovim -y
+
+echo " ---> Installing jump"
+export JUMP_VERSION="0.23.0"
+wget https://github.com/gsamokovarov/jump/releases/download/v${JUMP_VERSION}/jump_${JUMP_VERSION}_amd64.deb
+sudo dpkg -i jump_${JUMP_VERSION}_amd64.deb
+rm -f jump_${JUMP_VERSION}_amd64.deb
+
+echo " ---> Adding user to docker group"
+sudo gpasswd -a "${USER}" docker
+sudo usermod -aG docker "${USER}"
+sudo systemctl enable docker

@@ -14,15 +14,19 @@ export PATH="${PATH}:${HOME}/code/bin"
 export PATH="${PATH}:${HOME}/.local/bin"
 export PATH="${PATH}:${HOME}/.google-cloud-sdk/bin"
 
-brewPrefix=$(brew --prefix 2> /dev/null)
-export PATH="${brewPrefix}/opt/coreutils/libexec/gnubin:${PATH}"
-export PATH="${PATH}:/usr/local/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/bin"
-export PATH="${brewPrefix}/opt/gnu-sed/libexec/gnubin:${PATH}"
-export PATH="${brewPrefix}/opt/make/libexec/gnubin:${PATH}"
-export PATH="${brewPrefix}/opt/grep/libexec/gnubin:${PATH}"
-export PATH="${brewPrefix}/opt/findutils/libexec/gnubin:${PATH}"
-export PATH="${brewPrefix}/opt/gnu-tar/libexec/gnubin:${PATH}"
-[ -f /"${brewPrefix}/etc/bash_completion" ] && . "${brewPrefix}/etc/bash_completion"
+if [[ "$(uname)" == "Darwin" ]]; then
+  brewPrefix=$(brew --prefix 2> /dev/null)
+  export PATH="${brewPrefix}/opt/coreutils/libexec/gnubin:${PATH}"
+  export PATH="${PATH}:/usr/local/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/bin"
+  export PATH="${brewPrefix}/opt/gnu-sed/libexec/gnubin:${PATH}"
+  export PATH="${brewPrefix}/opt/make/libexec/gnubin:${PATH}"
+  export PATH="${brewPrefix}/opt/grep/libexec/gnubin:${PATH}"
+  export PATH="${brewPrefix}/opt/findutils/libexec/gnubin:${PATH}"
+  export PATH="${brewPrefix}/opt/gnu-tar/libexec/gnubin:${PATH}"
+  [ -f /"${brewPrefix}/etc/bash_completion" ] && . "${brewPrefix}/etc/bash_completion"
+else
+  [ -f /usr/share/bash-completion/bash_completion ] && source /usr/share/bash-completion/bash_completion
+fi
 
 # cli fuzzy finder
 [ -f ~/.fzf.bash ] && source ~/.fzf.bash
@@ -41,10 +45,6 @@ alias .....='cd ../../../..'
 alias c='clear'
 alias fhere='find . -name'
 alias mkdir='mkdir -pv'
-
-alias envuo='environments use-orchestra'
-alias envu='environments use'
-
 
 ##########
 ## History

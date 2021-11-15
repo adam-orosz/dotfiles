@@ -15,11 +15,19 @@
     rebase = false
 
 [core]
-    excludesfile = /Users/mattias/.gitignore_global
+	excludesfile = /Users/mattias/.gitignore_global
+
 [alias]
     wip = "add --all && commit -m 'WIP'"
     uncommit = "reset --soft HEAD^"
     squash = "!f(){ git reset --soft HEAD~${1} && git commit --edit -m\"$(git log --format=%B --reverse HEAD..HEAD@{1})\"; };f"
-    recent = branch --sort=committerdate
+    recent = branch --sort=-committerdate
+
 [url "git@github.com:neo-technology/neo4j-cloud.git"]
 	insteadOf = https://github.com/neo-technology/neo4j-cloud
+[difftool "sourcetree"]
+	cmd = opendiff \"$LOCAL\" \"$REMOTE\"
+	path = 
+[mergetool "sourcetree"]
+	cmd = /Applications/Sourcetree.app/Contents/Resources/opendiff-w.sh \"$LOCAL\" \"$REMOTE\" -ancestor \"$BASE\" -merge \"$MERGED\"
+	trustExitCode = true

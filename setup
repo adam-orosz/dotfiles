@@ -25,7 +25,7 @@ mkdir -p ~/.vim/mpsnippets
 [[ -f ~/.tmux.conf ]] || ln -s "$(pwd)/tmuxconf" ~/.tmux.conf
 [[ -f ~/.kubectl-aliases ]] || ln -s "$(pwd)/kubectl-aliases" ~/.kubectl-aliases
 [[ -f ~/.macos ]] || ln -s "$(pwd)/macos" ~/.macos
-[[ -f ~/.vim/mpsnippets ]] || ln -s "$(pwd)/go.snippets" ~/.vim/mpsnippets/go.snippets
+[[ -f ~/.vim/mpsnippets/go.snippets ]] || ln -s "$(pwd)/go.snippets" ~/.vim/mpsnippets/go.snippets
 
 if [[ "$(whoami)" == "mattias" ]]; then
   [[ -f ~/.gitconfig ]] || ln -s "$(pwd)/gitconfig" ~/.gitconfig

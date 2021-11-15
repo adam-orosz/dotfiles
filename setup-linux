@@ -102,9 +102,7 @@ sudo curl -L -o /usr/local/bin/kubectl https://storage.googleapis.com/kubernetes
 sudo chmod 755 /usr/local/bin/kubectl
 
 echo " ---> Installing yq"
-sudo add-apt-repository ppa:rmescandon/yq
-sudo apt update
-sudo apt install yq -y
+sudo snap install yq
 
 echo " ---> Installing neovim"
 sudo apt update -y

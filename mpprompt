@@ -24,6 +24,8 @@ _k8s_context() {
   if [[ -n "${AK_URL}" ]]; then
     if [[ "${AK_URL}" == *"kind" ]]; then
       ak_context="$(cut -d'/' -f3 <<<"${AK_URL}")"
+    elif [[ "${AK_URL}" == "file://"* ]]; then
+      ak_context="$(akutil context current | cut -d'/' -f5)"
     else
       ak_context="$(echo "${AK_URL}" | cut -d'/' -f5 | cut -d'?' -f1)"
     fi

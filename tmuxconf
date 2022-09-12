@@ -19,7 +19,7 @@ set-option -g status-right '%H:%Mh'
 set-option -g status-left ''
 
 # big history
-set-option -g history-limit 999999999
+set-option -g history-limit 100000
 
 # window navigation
 unbind c # new window
@@ -32,8 +32,8 @@ bind -n S-M-left previous-window
 
 # pane navigation
 unbind o # next pane
-unbind { # move current pane to previous position
-unbind } # move current pane to next position
+unbind '{' # move current pane to previous position
+unbind '}' # move current pane to next position
 unbind C-o # rotate panes clockwise
 unbind M-o # rotate panes counterclockwise
 unbind '"' # split window into horizontal panes
@@ -60,6 +60,10 @@ unbind C-M-left
 unbind C-M-right
 unbind C-M-up
 unbind C-M-down
+unbind S-M-left
+unbind S-M-right
+unbind S-M-up
+unbind S-M-down
 
 # Switch panes with shift+arrow, don't require prefix (-n)
 bind -n S-left select-pane -L

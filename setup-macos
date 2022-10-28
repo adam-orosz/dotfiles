@@ -55,8 +55,8 @@ echo "installing tools with pip3..."
 pip3 install --upgrade yq pipenv "awscli>=1.18.201,<1.18.202" neovim flake8 >/dev/null
 
 if [[ "$(uname -m)" == "arm64" ]]; then
-  EKSCTL_VERSION="0.61.0"
-  KUBECTL_VERSION="1.21.4"
+  EKSCTL_VERSION="0.109.0"
+  KUBECTL_VERSION="1.23.5"
   KIND_VERSION="0.11.1"
   KUSTOMIZE_VERSION="4.4.0"
   GOOGLE_CLOUD_SDK_VERSION="360.0.0"
@@ -67,8 +67,8 @@ if [[ "$(uname -m)" == "arm64" ]]; then
   KIND_URL="https://github.com/kubernetes-sigs/kind/releases/download/v${KIND_VERSION}/kind-Darwin-arm64"
   KUSTOMIZE_URL="https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize/v${KUSTOMIZE_VERSION}/kustomize_v${KUSTOMIZE_VERSION}_darwin_arm64.tar.gz"
 else
-  EKSCTL_VERSION="0.61.0"
-  KUBECTL_VERSION="1.21.4"
+  EKSCTL_VERSION="0.109.0"
+  KUBECTL_VERSION="1.23.5"
   KIND_VERSION="0.7.0"
   KUSTOMIZE_VERSION="3.8.3"
   GOOGLE_CLOUD_SDK_VERSION="360.0.0"

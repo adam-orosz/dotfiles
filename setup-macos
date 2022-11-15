@@ -12,13 +12,13 @@ cat <<EOF >"${HOME}/.bash_profile"
 
 # node@12
 if [[ "\$(uname -m)" == "arm64" ]]; then
-  export PATH="/opt/homebrew/opt/node@12/bin:\$PATH"
-  export LDFLAGS="-L/opt/homebrew/opt/node@12/lib"
-  export CPPFLAGS="-I/opt/homebrew/opt/node@12/include"
+  export PATH="/opt/homebrew/opt/node@16/bin:\$PATH"
+  export LDFLAGS="-L/opt/homebrew/opt/node@16/lib"
+  export CPPFLAGS="-I/opt/homebrew/opt/node@16/include"
 else
-  export PATH="/usr/local/opt/node@12/bin:\$PATH"
-  export LDFLAGS="-L/usr/local/opt/node@12/lib"
-  export CPPFLAGS="-I/usr/local/opt/node@12/include"
+  export PATH="/usr/local/opt/node@16/bin:\$PATH"
+  export LDFLAGS="-L/usr/local/opt/node@16/lib"
+  export CPPFLAGS="-I/usr/local/opt/node@16/include"
 fi
 
 # gcloud

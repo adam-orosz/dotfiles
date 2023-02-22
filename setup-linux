@@ -11,3 +11,5 @@ cat <<EOF >"${HOME}/.bash_profile"
 [[ -f "${HOME}/.bashrc" ]] && . "${HOME}/.bashrc"
 [[ -f "${HOME}/.local_bash_profile" ]] && source "${HOME}/.local_bash_profile"
 EOF
+
+echo "source /workspaces/.codespaces/.persistedshare/dotfiles/bashrc" >> /home/codespace/.bashrc

@@ -7,9 +7,6 @@ set -o pipefail -o errtrace -o errexit -o nounset
 declare errmsg="ERROR (${0##*/})":
 trap 'echo >&2 $errmsg trap on error \(rc=${PIPESTATUS[@]}\) near line $LINENO' ERR
 
-# ask for the administrator password upfront
-sudo -v
-
 mkdir -p ~/.config
 mkdir -p ~/.config/nvim
 mkdir -p ~/code/go
@@ -36,9 +33,6 @@ if [[ "$(uname)" == "Darwin" ]]; then
 else
   ./setup-linux
 fi
-
-echo "installing tools with pip3..."
-pip3 install --upgrade yq pipenv "awscli>=1.18.201,<1.18.202" neovim flake8 >/dev/null
 
 echo "installing fzf... "
 if [[ ! -d "${HOME}/.fzf" ]]; then

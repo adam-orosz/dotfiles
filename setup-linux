@@ -14,3 +14,4 @@ EOF
 
 echo "source /workspaces/.codespaces/.persistedshare/dotfiles/bashrc" >> /home/codespace/.bashrc
 echo "bazinga" >> /home/codespace/.bashrc
+echo "bazinga2" >> /home/codespace/.bashrc
